@@ -5,10 +5,7 @@ import numpy as np
 from skimage.transform import resize
 
 class Dataloader():
-  def __init__(self, data_dir, annotation_file, label_file, image_size=(256, 256), should_load_into_memory=False):
-    self.data_dir = data_dir
-    self.annotation_file = annotation_file
-    self.label_file = label_file
+  def __init__(self, image_size=(256, 256), should_load_into_memory=False):
     self.image_size = image_size
     self.n_channels = 3
     self.should_load_into_memory = should_load_into_memory
@@ -33,31 +30,18 @@ class Dataloader():
   def label_from_idx(self, idx):
     return self.labels[idx]
 
-  def load(self):
-    print(f"Loading data from annotation file {self.annotation_file} and {self.label_file}")
-
-    if not self._load_labels():
-      print("Error: Could not load labels")
-      return
-
-    if not self._load_annotations():
-      print("Error: Could not load annotations")
-      return
-
-    self.shuffle()
-
   def shuffle(self):
     self._example_idx = 0
-    self._random_indices = list(range(len(self.inputs)-1))
+    self._random_indices = list(range(len(self.inputs)))
 
-  def _load_labels(self):
-    if not os.path.exists(self.label_file):
-      print(f"Label file does not exist {self.label_file}")
+  def load_labels(self, filename):
+    if not os.path.exists(filename):
+      print(f"Label file does not exist {filename}")
       return False
 
     print("Reading labels...")
     labels = set()
-    with open(self.label_file, 'r') as f:
+    with open(filename, 'r') as f:
       for line in f:
         label = line.strip()
         labels.add(label)
@@ -65,7 +49,7 @@ class Dataloader():
     for label in labels:
       self.labels.append(label)
     
-    # since they are in a set, we will have to sort them to get consistent behavior
+    # Since they are in a set, we will have to sort them to get consistent behavior
     self.labels.sort()
     print(f"Got {len(self.labels)} labels")
     for label in self.labels:
@@ -73,15 +57,20 @@ class Dataloader():
 
     return True
 
-  def _load_annotations(self):
-    if not os.path.exists(self.annotation_file):
-      print(f"Annotation file does not exist {self.annotation_file}")
+  def load_annotations(self, filename):
+    if not os.path.exists(filename):
+      print(f"Annotation file does not exist {filename}")
       return False
 
-    print(f"Reading annotation file: {self.annotation_file}")
+    if len(self.labels) == 0:
+      print(f"Must call dataloader.load_labels() before dataloader.load_annotations()")
+      return False
+
+    print(f"Reading annotation file: {filename}")
     filenames = []
     labels = []
-    with open(self.annotation_file, 'r') as f:
+    # First gather labels and filenames, so we can do a nice progress bar
+    with open(filename, 'r') as f:
       for line in f:
         split_line = line.strip().split('\t')
         filename = split_line[0]
@@ -90,7 +79,6 @@ class Dataloader():
           print(f"Label not known: {label}")
           return False
 
-        filename = os.path.join(self.data_dir, filename)
         if not os.path.exists(filename):
           print(f"Could not find file {filename}")
           return False
@@ -98,6 +86,7 @@ class Dataloader():
         filenames.append(filename)
         labels.append(label)
 
+    # Then load the data in correct format, either into memory or just file pointers
     print(f"Loading {len(filenames)} annotations")
     for i in tqdm(range(len(filenames))):
       filename = filenames[i]
@@ -113,14 +102,13 @@ class Dataloader():
         self.inputs.append(filename)
 
       self.outputs.append(label_idx)
-    print(f"Done loading {len(self.inputs)}")
 
+    print(f"Done loading {len(self.inputs)}")
+    # Shuffle at the start to make sure we are ready to cock
+    self.shuffle()
     return True
 
   def get_batch(self, size):
-    if self._example_idx + size > len(self.inputs):
-      self.shuffle()
-
     input_batch = np.zeros((size, self.image_size[0], self.image_size[1], self.n_channels))
     output_batch = np.zeros((size, len(self.labels)))
     for i in range(size):

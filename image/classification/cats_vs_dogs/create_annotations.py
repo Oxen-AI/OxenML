@@ -2,13 +2,12 @@
 import os
 import sys
 
-if len(sys.argv) != 4:
-  print(f"Usage: {sys.argv[0]} <data_dir> <file_prefix> <output.txt>")
+if len(sys.argv) != 3:
+  print(f"Usage: {sys.argv[0]} <data_dir> <output.txt>")
   exit()
 
 input_dir = sys.argv[1]
-prefix = sys.argv[2]
-output_file = sys.argv[3]
+output_file = sys.argv[2]
 
 if not os.path.exists(input_dir):
   print(f"Directory does not exist {input_dir}")
@@ -19,7 +18,8 @@ with open(output_file, 'w') as output:
   print(f"Writing to {output_file}")
   for file in os.listdir(input_dir):
     label = file.split(".")[0]
-    line = f"{prefix}/{file}\t{label}"
+    path = os.path.join(input_dir, file)  
+    line = f"{path}\t{label}"
     output.write(line)
     output.write("\n")
     count += 1
