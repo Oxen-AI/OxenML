@@ -2,8 +2,8 @@
 import sys, os
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras import layers
-from tensorflow.keras.utils import plot_model
+from keras import layers
+from keras.utils import plot_model
 
 from data_loader import Dataloader
 
