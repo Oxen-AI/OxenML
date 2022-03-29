@@ -24,17 +24,15 @@ with open(hyper_param_file, 'r') as f:
   params = json.load(f)
 
 img_size = params['image_size']
-image = Image.open(image_file)
-frame = np.asarray(image)
-frame = resize(frame, (img_size, img_size))
+dataloader = Dataloader(image_size=(img_size, img_size))
+dataloader.load_labels(labels_file)
+
+frame = dataloader.read_image_from_disk(image_file)
 frame = frame.reshape((1, img_size, img_size, 3))
 
 outputs = model(frame)
 index = np.argmax(outputs[0])
 print(f"outputs {outputs}\nindex {index}")
-
-dataloader = Dataloader()
-dataloader.load_labels(labels_file)
 
 prob = outputs[0][index] * 100
 label = dataloader.label_from_idx(index)

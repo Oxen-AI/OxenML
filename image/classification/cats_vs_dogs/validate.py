@@ -25,7 +25,7 @@ with open(hyper_param_file, 'r') as f:
   params = json.load(f)
 
 img_size = params['image_size']
-dataloader = Dataloader()
+dataloader = Dataloader(image_size=(img_size, img_size))
 dataloader.load_labels(labels_file)
 dataloader.load_annotations(annotations_file)
 

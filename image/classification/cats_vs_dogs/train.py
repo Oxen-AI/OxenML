@@ -34,7 +34,7 @@ if not os.path.exists(output_dir):
 annotations_file = os.path.join(os.path.join(data_dir, "annotations"), "train_annotations.txt")
 labels_file = os.path.join(os.path.join(data_dir, "labels"), "labels.txt")
 
-image_size = 256
+image_size = 128
 num_epochs = 100
 batch_size = 32
 
@@ -45,19 +45,26 @@ hyper_params = {
 }
 
 dataloader = Dataloader(
-  should_load_into_memory=False,
+  should_load_into_memory=True,
   image_size=(image_size, image_size)
 )
-dataloader.load_labels(labels_file)
-dataloader.load_annotations(annotations_file)
-num_outputs = dataloader.num_outputs()
+if not dataloader.load_labels(labels_file):
+  print("Unable to load labels file")
+  exit()
 
+if not dataloader.load_annotations(annotations_file):
+  print("Unable to load annotations file")
+  exit()
+
+num_outputs = dataloader.num_outputs()
 model = keras.Sequential(
     [
         keras.Input(shape=(image_size,image_size,3)),
-        layers.Conv2D(64, 3, strides=2, padding="same", activation="relu"),
+        layers.Conv2D(32, 3, strides=2, padding="same", activation="relu"),
         layers.MaxPooling2D(pool_size=(2, 2)),
         layers.Conv2D(64, 3, strides=2, padding="same", activation="relu"),
+        layers.MaxPooling2D(pool_size=(2, 2)),
+        layers.Conv2D(128, 3, strides=2, padding="same", activation="relu"),
         layers.MaxPooling2D(pool_size=(2, 2)),
         layers.Flatten(),
         layers.Dropout(0.5),
@@ -72,8 +79,8 @@ optimizer = keras.optimizers.SGD(learning_rate=1e-3)
 
 num_batches = int(dataloader.num_examples() / batch_size) - 1
 print(f"Training for {num_epochs} epochs on {num_batches} batches")
+save_model(0, model, hyper_params)
 for epoch in range(num_epochs):
-  save_model(epoch, model, hyper_params)
   for step in range(num_batches):
     (x, y) = dataloader.get_batch(batch_size)
     with tf.GradientTape() as tape:
@@ -84,7 +91,6 @@ for epoch in range(num_epochs):
     optimizer.apply_gradients(zip(grads, model.trainable_weights))
     if step % 10 == 0:
       print(f"Epoch {epoch} Batch {step} Loss {loss_value}")
-  
-  
+  save_model(epoch, model, hyper_params)
   print(f"---- End Epoch {epoch} ----")
   dataloader.shuffle()

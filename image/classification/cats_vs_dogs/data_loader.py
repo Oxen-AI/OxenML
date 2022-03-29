@@ -93,10 +93,7 @@ class Dataloader():
       label_idx = self.labels.index(labels[i])
 
       if self.should_load_into_memory:
-        image = Image.open(filename)
-        frame = np.asarray(image)
-        frame = resize(frame, (self.image_size[0], self.image_size[1]))
-        # frame = frame.flatten().reshape(1, self.input_length())
+        frame = self.read_image_from_disk(filename)
         self.inputs.append(frame)
       else:
         self.inputs.append(filename)
@@ -117,14 +114,16 @@ class Dataloader():
         input_batch[i] = self.inputs[index]
       else:
         filename = self.inputs[index]
-        image = Image.open(filename)
-        frame = np.asarray(image)
-        frame = resize(frame, (self.image_size[0], self.image_size[1]))
-        # frame = frame.flatten().reshape(1, self.input_length())
+        frame = self.read_image_from_disk(filename)
         input_batch[i] = frame
 
       output_batch[i][self.outputs[index]] = 1
       self._example_idx += 1
 
     return (input_batch, output_batch)
+
+  def read_image_from_disk(self, filename):
+    image = Image.open(filename)
+    frame = np.asarray(image)
+    return resize(frame, (self.image_size[0], self.image_size[1]))
 
