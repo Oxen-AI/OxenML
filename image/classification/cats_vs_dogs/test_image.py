@@ -22,7 +22,7 @@ img_size = 256
 image = Image.open(image_file)
 frame = np.asarray(image)
 frame = resize(frame, (256, 256))
-frame = frame.flatten().reshape(1, 256*256*3)
+frame = frame.reshape((1, 256, 256, 3))
 
 outputs = model(frame)
 index = np.argmax(outputs[0])

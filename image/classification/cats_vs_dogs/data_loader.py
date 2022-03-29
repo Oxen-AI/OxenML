@@ -107,7 +107,7 @@ class Dataloader():
         image = Image.open(filename)
         frame = np.asarray(image)
         frame = resize(frame, (self.image_size[0], self.image_size[1]))
-        frame = frame.flatten().reshape(1, self.input_length())
+        # frame = frame.flatten().reshape(1, self.input_length())
         self.inputs.append(frame)
       else:
         self.inputs.append(filename)
@@ -121,7 +121,7 @@ class Dataloader():
     if self._example_idx + size > len(self.inputs):
       self.shuffle()
 
-    input_batch = np.zeros((size, self.input_length()))
+    input_batch = np.zeros((size, self.image_size[0], self.image_size[1], self.n_channels))
     output_batch = np.zeros((size, len(self.labels)))
     for i in range(size):
       index = self._random_indices[self._example_idx]
@@ -132,7 +132,7 @@ class Dataloader():
         image = Image.open(filename)
         frame = np.asarray(image)
         frame = resize(frame, (self.image_size[0], self.image_size[1]))
-        frame = frame.flatten().reshape(1, self.input_length())
+        # frame = frame.flatten().reshape(1, self.input_length())
         input_batch[i] = frame
 
       output_batch[i][self.outputs[index]] = 1

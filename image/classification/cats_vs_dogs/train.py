@@ -25,21 +25,29 @@ dataloader = Dataloader(
   data_dir=data_dir,
   annotation_file=annotations_file,
   label_file=labels_file,
-  should_load_into_memory=True
+  should_load_into_memory=False
 )
 dataloader.load()
 
-num_epochs = 10
+num_epochs = 100
 batch_size = 32
 num_batches = int(dataloader.num_examples() / batch_size) - 1
 
 num_outputs = dataloader.num_outputs()
-inputs = keras.Input(shape=(dataloader.input_length(),), name="image_inputs")
-features_1 = layers.Dense(128, activation="relu")(inputs)
-features_2 = layers.Dense(64, activation="relu")(features_1)
-outputs = layers.Dense(num_outputs, activation="softmax")(features_2)
 
-model = keras.Model(inputs=inputs, outputs=outputs)
+img_size = 256
+model = keras.Sequential(
+    [
+        keras.Input(shape=(256,256,3)),
+        layers.Conv2D(64, 3, strides=2, padding="same", activation="relu"),
+        layers.MaxPooling2D(pool_size=(2, 2)),
+        layers.Conv2D(64, 3, strides=2, padding="same", activation="relu"),
+        layers.MaxPooling2D(pool_size=(2, 2)),
+        layers.Flatten(),
+        layers.Dropout(0.5),
+        layers.Dense(num_outputs, activation="softmax"),
+    ]
+)
 model.compile(metrics=["accuracy"])
 
 print(model.summary())
