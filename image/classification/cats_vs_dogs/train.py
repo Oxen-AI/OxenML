@@ -6,6 +6,7 @@ from tensorflow.keras import layers
 from tensorflow.keras.utils import plot_model
 import simplejson as json
 from data_loader import Dataloader
+from model import ImageClassifierModel
 
 if len(sys.argv) != 3:
   print(f"Usage: {sys.argv[0]} <data-dir> <output-dir>")
@@ -34,14 +35,16 @@ if not os.path.exists(output_dir):
 annotations_file = os.path.join(os.path.join(data_dir, "annotations"), "train_annotations.txt")
 labels_file = os.path.join(os.path.join(data_dir, "labels"), "labels.txt")
 
-image_size = 128
+image_size = 150
 num_epochs = 100
 batch_size = 32
+learning_rate = 1e-5
 
 hyper_params = {
   'image_size': image_size,
   'num_epochs': num_epochs,
-  'batch_size': batch_size
+  'batch_size': batch_size,
+  'learning_rate': learning_rate
 }
 
 dataloader = Dataloader(
@@ -57,25 +60,14 @@ if not dataloader.load_annotations(annotations_file):
   exit()
 
 num_outputs = dataloader.num_outputs()
-model = keras.Sequential(
-    [
-        keras.Input(shape=(image_size,image_size,3)),
-        layers.Conv2D(32, 3, strides=2, padding="same", activation="relu"),
-        layers.MaxPooling2D(pool_size=(2, 2)),
-        layers.Conv2D(64, 3, strides=2, padding="same", activation="relu"),
-        layers.MaxPooling2D(pool_size=(2, 2)),
-        layers.Conv2D(128, 3, strides=2, padding="same", activation="relu"),
-        layers.MaxPooling2D(pool_size=(2, 2)),
-        layers.Flatten(),
-        layers.Dropout(0.5),
-        layers.Dense(num_outputs, activation="softmax"),
-    ]
+model = ImageClassifierModel(
+  type="mobile_net_v2",
+  input_size=image_size,
+  output_size=num_outputs,
+  learning_rate=learning_rate
 )
-model.compile(metrics=["accuracy"])
-
+(model, loss_fn, optimizer) = model.build()
 print(model.summary())
-loss_fn = keras.losses.CategoricalCrossentropy()
-optimizer = keras.optimizers.SGD(learning_rate=1e-3)
 
 num_batches = int(dataloader.num_examples() / batch_size) - 1
 print(f"Training for {num_epochs} epochs on {num_batches} batches")

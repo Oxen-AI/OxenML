@@ -65,8 +65,13 @@ for index in tqdm(range(total)):
   
 print("Category Counts:")
 for (k,v) in category_counts.items():
-  guess_count = guess_counts[k]
-  correct_count = correct_counts[k]
+  guess_count = 0
+  if k in guess_counts:
+    guess_count = guess_counts[k]
+
+  correct_count = 0
+  if k in correct_counts:
+    correct_count = correct_counts[k]
 
   precision = float(correct_count) / float(v)
   # recall = float(guess_count) / float(v)
