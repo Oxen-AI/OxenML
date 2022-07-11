@@ -27,59 +27,76 @@ with open(hyper_param_file, 'r') as f:
 img_size = params['image_size']
 dataloader = Dataloader(image_size=(img_size, img_size))
 dataloader.load_labels(labels_file)
-dataloader.load_annotations(annotations_file)
+dataloader.load_annotations(annotations_file, shuffle=False)
 
-num_correct = 0
+threshold = 0.5
 total = dataloader.num_examples()
-category_counts = {}
-guess_counts = {}
-correct_counts = {}
+tps = {} # true positive, correct, and confidence is over threshold
+fps = {} # false positive, incorrect, and above confidence threshold
+tns = {} # true negative, incorrect, but below confidence threshold
+fns = {} # false negative, correct, but below confidence threshol
 print(f"Validating {total} examples")
 for index in tqdm(range(total)):
   (i, o) = dataloader.get_batch(1)
   outputs = model(i)
   predicted_index = np.argmax(outputs[0])
-  # print(f"[{index}/{total}] outputs {outputs}\npredicted_index {predicted_index}")
-  prob = outputs[0][predicted_index] * 100
-  guessed_label = dataloader.label_from_idx(predicted_index)
-  # print(f"({label}) {prob}%")
-  # print(f"{o}")
-
+  print(f"[{index}/{total}] outputs {outputs}\npredicted_index {predicted_index}")
+  prob = outputs[0][predicted_index]
   correct_index = np.argmax(o)
-  if correct_index == predicted_index:
-    if guessed_label not in correct_counts:
-      correct_counts[guessed_label] = 0
-    correct_counts[guessed_label] += 1
-    num_correct += 1
 
-  # Sum up counts
+  guessed_label = dataloader.label_from_idx(predicted_index)
   correct_label = dataloader.label_from_idx(correct_index)
-  if correct_label not in category_counts:
-    category_counts[correct_label] = 0
-  category_counts[correct_label] += 1
-  
-  if guessed_label not in guess_counts:
-    guess_counts[guessed_label] = 0
-  guess_counts[guessed_label] += 1
-  
-  
-print("Category Counts:")
-for (k,v) in category_counts.items():
-  guess_count = 0
-  if k in guess_counts:
-    guess_count = guess_counts[k]
+  print(f"{guessed_label} == {correct_label} {prob}%")
 
-  correct_count = 0
-  if k in correct_counts:
-    correct_count = correct_counts[k]
+  # true positive
+  if correct_index == predicted_index and prob > threshold:
+    print(f"TP {correct_label}")
+    if correct_label not in tps:
+      tps[correct_label] = 0
+    tps[correct_label] += 1
 
-  precision = float(correct_count) / float(v)
-  # recall = float(guess_count) / float(v)
+  # false positive
+  if correct_index != predicted_index and prob > threshold:
+    print(f"FP {correct_label}")
+    if correct_label not in fps:
+      fps[correct_label] = 0
+    fps[correct_label] += 1
+
+  # true negative
+  if correct_index != predicted_index and prob < threshold:
+    print(f"TN {correct_label}")
+    if correct_label not in tns:
+      tns[correct_label] = 0
+    tns[correct_label] += 1
+
+  # false negative
+  if correct_index == predicted_index and prob < threshold:
+    print(f"FN {correct_label}")
+    if correct_label not in fns:
+      fns[correct_label] = 0
+    fns[correct_label] += 1
   
-  print(f"{k} Precision = {correct_count} / {v} = {precision}")
-  # print(f"{k} Recall = {guess_count} / {v} = {recall}")
+  print(f"tps: {tps}")
+  print(f"fps: {fps}")
+  print(f"tns: {tns}")
+  print(f"fns: {fns}")
+  
+  
+print("Categories")
+for label in dataloader.labels:
+  tp = tps[label] if label in tps else 0.0
+  fp = fps[label] if label in fps else 0.0
+  tn = tns[label] if label in tns else 0.0
+  fn = fns[label] if label in fns else 0.0
 
-accuracy = float(num_correct) / float(total)
-print(f"Accuracy = {num_correct} / {total} = {accuracy}")
+  accuracy = 0.0 if (tp == 0.0 and fp == 0.0 and tn == 0.0 and fn == 0.0) else (tp + tn) / (tp + fp + tn + fn)
+  precision = 0.0 if (tp == 0.0 and fp == 0.0) else tp / (tp + fp)
+  recall =  0.0 if (tp == 0.0 and fn == 0.0) else tp / (tp + fn)
+  
+  print(f"---- {label} ----")
+  print(f"Accuracy = ({tp} + {tn}) / ({tp} + {fp} + {tn} + {fn}) = {accuracy}")
+  print(f"Precision = {tp} / ({tp} + {fp}) = {precision}")
+  print(f"Recall = {tp} / ({tp} + {fn}) = {recall}")
+
 
 

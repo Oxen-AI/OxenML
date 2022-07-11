@@ -3,6 +3,7 @@ from tqdm import tqdm
 from PIL import Image
 import numpy as np
 from skimage.transform import resize
+import random
 
 class Dataloader():
   def __init__(self, image_size=(256, 256), should_load_into_memory=False):
@@ -30,10 +31,14 @@ class Dataloader():
   def label_from_idx(self, idx):
     return self.labels[idx]
 
-  def shuffle(self):
+  def reset(self):
     self._example_idx = 0
     self._random_indices = list(range(len(self.inputs)))
 
+  def shuffle(self):
+    self.reset()
+    random.shuffle(self._random_indices)
+    
   def load_labels(self, filename):
     if not os.path.exists(filename):
       print(f"Label file does not exist {filename}")
@@ -57,7 +62,7 @@ class Dataloader():
 
     return True
 
-  def load_annotations(self, filename):
+  def load_annotations(self, filename, total=-1, shuffle=True):
     if not os.path.exists(filename):
       print(f"Annotation file does not exist {filename}")
       return False
@@ -86,6 +91,9 @@ class Dataloader():
         filenames.append(filename)
         labels.append(label)
 
+        if total > 0 and len(filenames) > total:
+          break
+
     # Then load the data in correct format, either into memory or just file pointers
     print(f"Loading {len(filenames)} annotations")
     for i in tqdm(range(len(filenames))):
@@ -101,8 +109,11 @@ class Dataloader():
       self.outputs.append(label_idx)
 
     print(f"Done loading {len(self.inputs)}")
-    # Shuffle at the start to make sure we are ready to cock
-    self.shuffle()
+    if shuffle:
+      # Shuffle at the start to make sure we are ready to rock
+      self.shuffle()
+    else:
+      self.reset()
     return True
 
   def get_batch(self, size):

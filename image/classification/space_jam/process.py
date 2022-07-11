@@ -21,7 +21,7 @@ if not os.path.exists(train_dir):
     os.mkdir(train_dir)
 
 annotations_file = os.path.join(data_dir, "annotation_dict.json")
-labels_file = os.path.join(data_dir, "labels_dict.json")
+labels_file = os.path.join(data_dir, "labels_subset.json")
 output_annotations_file = os.path.join(output_dir, "annotations.txt")
 output_labels_file = os.path.join(output_dir, "labels.txt")
 
@@ -49,12 +49,16 @@ num_videos = len(annotations)
 key_counts = {}
 with alive_bar(num_videos, title=f'Processing videos') as bar:
     for key in annotations.keys():
-        value = annotations[key]
+        value = f"{annotations[key]}"
         filename = f"examples/{key}.mp4"
         f = os.path.join(data_dir, filename)
+        bar()
+
+        if not value in labels:
+            continue
 
         # print(f"looking up value: {value}")
-        classification = labels[f"{value}"]
+        classification = labels[value]
         # print(f"got class: {classification}")
 
         # print(f"Got video file: {f}")
@@ -79,7 +83,6 @@ with alive_bar(num_videos, title=f'Processing videos') as bar:
                 cv2.imwrite(output_file, image)
                 break
 
-        bar()
         # if len(key_counts) == 10:
         #     break
 
