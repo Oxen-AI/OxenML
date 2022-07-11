@@ -1,16 +1,24 @@
 
-Experiments
+# Get the data
+
+`oxen clone http://hub.oxen.ai/g/Cats-vs-Dogs`
+
+`cd Cats-vs-Dogs`
+
+`oxen pull`
 
 
-# You may not be lucky enough to have 25000 images in your dataset, yet, lets increasingly add data
+# Experiments
 
-# Let's start with something more reasonable, like 100, overfit on it, go up to 1000, see how it does
+## You may not be lucky enough to have 25000 images in your dataset, yet, lets increasingly add data
 
-# Use oxen to manage adding more data and facilitating all these experiments from simple model, complex model, etc
+## Let's start with something more reasonable, like 100, overfit on it, go up to 1000, see how it does
 
-# Add "none" category for more real world example
+## Use oxen to manage adding more data and facilitating all these experiments from simple model, complex model, etc
 
-# Model iteration
+## Add "none" category for more real world example
+
+## Model iteration
 - Simple feed forward NN (change to 150x150 input, make sure we can see the images)
 - ConvNet (start with RMSProp or whatever I started with)
 - ConvNet more layers

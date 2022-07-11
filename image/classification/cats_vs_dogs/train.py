@@ -2,8 +2,6 @@
 import sys, os
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras import layers
-from tensorflow.keras.utils import plot_model
 import simplejson as json
 from data_loader import Dataloader
 from model import ImageClassifierModel
@@ -19,7 +17,7 @@ def save_model(epoch, model, params):
 
   # Save image of architecture
   out_plot = os.path.join(os.path.join(output_dir, f"epoch_{epoch}"), "plot.png")
-  plot_model(model, out_plot, show_shapes=True)
+  keras.utils.plot_model(model, out_plot, show_shapes=True)
   
   # Save hyper params
   hyper_param_file = os.path.join(model_dir, "params.json")
@@ -30,7 +28,7 @@ data_dir = sys.argv[1]
 output_dir = sys.argv[2]
 
 if not os.path.exists(output_dir):
-  os.mkdir(output_dir)
+  os.makedirs(output_dir)
 
 annotations_file = os.path.join(os.path.join(data_dir, "annotations"), "train_annotations.txt")
 labels_file = os.path.join(os.path.join(data_dir, "labels"), "labels.txt")

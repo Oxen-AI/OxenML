@@ -17,7 +17,7 @@ count = 0
 with open(output_file, 'w') as output:
   print(f"Writing to {output_file}")
   for file in os.listdir(input_dir):
-    label = file.split(".")[0]
+    label = file.split(".")[0].split("_")[0]
     path = os.path.join(input_dir, file)  
     line = f"{path}\t{label}"
     output.write(line)
