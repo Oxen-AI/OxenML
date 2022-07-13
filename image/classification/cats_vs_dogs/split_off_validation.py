@@ -19,22 +19,31 @@ if not os.path.exists(input_dir):
 if not os.path.exists(output_dir):
   os.mkdir(output_dir)
 
-
 count = 0
-files = []
+video_ids_to_files = {}
+video_ids = []
 for file in os.listdir(input_dir):
-  files.append(file)
-random.shuffle(files)
+  # HACK FOR VIDEOS
+  video_id = file.split("_")[1]
+  print(f"{file} -> {video_id}")
+  if not video_id in video_ids_to_files:
+    video_ids.append(video_id)
+    video_ids_to_files[video_id] = []
+  video_ids_to_files[video_id].append(file)
+random.shuffle(video_ids)
 
-for file in files:
-  if count >= num_entries:
-    break
-  print(file)
-  train_file = os.path.join(input_dir, file)
-  valid_file = os.path.join(output_dir, file)
-  print(f"Moving {train_file} -> {valid_file}")
-  shutil.move(train_file, valid_file)
-  count += 1
+for video_id in video_ids:
+  files = video_ids_to_files[video_id]
+  print(files)
+  for file in files:
+    if count >= num_entries:
+      break
+    print(file)
+    train_file = os.path.join(input_dir, file)
+    valid_file = os.path.join(output_dir, file)
+    print(f"Moving {train_file} -> {valid_file}")
+    shutil.move(train_file, valid_file)
+    count += 1
 
 print(f"Moved {count} files")
 

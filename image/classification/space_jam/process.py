@@ -45,7 +45,7 @@ for key in labels.keys():
 
 video_files = []
 num_videos = len(annotations)
-
+filenames = []
 key_counts = {}
 with alive_bar(num_videos, title=f'Processing videos') as bar:
     for key in annotations.keys():
@@ -64,6 +64,7 @@ with alive_bar(num_videos, title=f'Processing videos') as bar:
         # print(f"Got video file: {f}")
         video = cv2.VideoCapture(f)
         success = 1
+        frame = 0
 
         while success:
             success, image = video.read()
@@ -73,33 +74,30 @@ with alive_bar(num_videos, title=f'Processing videos') as bar:
                     key_counts[classification] = 0
                 key_counts[classification] += 1
 
-                count = key_counts[classification]
-                output_name = f"{classification}_{count}.jpg"
+                output_name = f"{classification}_{key}_{frame}.jpg"
                 output_file = os.path.join(train_dir, output_name)
-
+                
                 # print(f"Saving image: {output_file}")
 
                 # Saves the frames with frame-count
                 cv2.imwrite(output_file, image)
-                break
+                filenames.append(output_file)
+                frame += 1
 
-        # if len(key_counts) == 10:
-        #     break
+        # break
 
 print(f"Saving annotations")
 
 train_annotations = []
 
 with open(output_annotations_file, 'w') as f:
-    for key in key_counts.keys():
-        num_examples = key_counts[key]
-
-        for i in range(num_examples):
-            filename = f"{key}_{i+1}.jpg"
-            train_filename = os.path.join(train_dir, filename)
-
-            f.write(f"{train_filename}\t{key}")
-            f.write("\n")
+    for filename in filenames:
+        filename = os.path.basename(filename)
+        key = filename.split("_")[0]
+        train_filename = os.path.join(train_dir, filename)
+        line = f"{train_filename}\t{key}"
+        f.write(line)
+        f.write("\n")
 
 
 with open(output_labels_file, 'w') as f:
