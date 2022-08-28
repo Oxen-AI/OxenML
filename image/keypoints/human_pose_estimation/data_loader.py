@@ -150,7 +150,9 @@ class Dataloader():
         center_x = int(keypoint.x)
         center_y = int(keypoint.y)
         # print(f"center is {center_x},{center_y}")
-        output[center_x][center_y][i] = 1
+        
+        if center_x < output.shape[0] and center_y < output.shape[1]:
+          output[center_x][center_y][i] = 1
 
         th = 1.6052
         delta = math.sqrt(th * 2)

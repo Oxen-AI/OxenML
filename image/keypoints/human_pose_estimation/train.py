@@ -10,19 +10,16 @@ import imgaug.augmenters as iaa
 import logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s')
 
-if len(sys.argv) != 3:
+if len(sys.argv) < 3:
   print(f"Usage: {sys.argv[0]} <data-dir> <output-dir>")
   exit()
 
 def save_model(epoch, step, model, params):
   # Save model
-  model_dir = os.path.join(output_dir, f"epoch_{epoch}_step_{step}")
+  name = f"epoch_{epoch}_step_{step}"
+  model_dir = os.path.join(output_dir, name)
   model.save(model_dir)
 
-  # Save image of architecture
-  out_plot = os.path.join(os.path.join(output_dir, f"epoch_{epoch}"), "plot.png")
-  keras.utils.plot_model(model, out_plot, show_shapes=True)
-  
   # Save hyper params
   hyper_param_file = os.path.join(model_dir, "params.json")
   with open(hyper_param_file, 'w') as f:
@@ -97,10 +94,5 @@ for epoch in range(num_epochs):
     if step % 1000 == 0:
       save_model(epoch, step, model, hyper_params)
 
-  # if epoch == 100:
-  #   learning_rate = 1e-5
-
-  # if epoch % 100 == 0:
-  save_model(epoch, num_batches, model, hyper_params)
   logging.info(f"---- End Epoch {epoch} ----")
   dataloader.shuffle()
