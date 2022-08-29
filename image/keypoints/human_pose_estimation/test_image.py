@@ -68,11 +68,28 @@ for i in range(dataloader.num_outputs()):
     kps.append(x)
     kps.append(y)
     kps.append(0)
-  
+    # kps.append(1)
+
+    # heatmap -= heatmap.mean()
+    # heatmap /= heatmap.std()
+    # heatmap *=  64
+    # heatmap += 128
+
+    # x = np.argmax(np.amax(heatmap, axis=1))
+    # y = np.argmax(np.amax(heatmap, axis=0))
+    # val = heatmap[x][y]
+    # format_val = "{:.2f}".format(val)
+
+    # print(f"Got suboptimal kp[{i}] {x},{y} val {format_val}")
+
+
+    # plt.imshow(heatmap, interpolation='nearest')
+    # plt.show()
+
   # break
 
 # visualize_keypoints([frame], [kps])
-fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(16, 12))
+fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(8, 6))
 [ax.axis("off") for ax in np.ravel(axes)]
 
 print(axes)

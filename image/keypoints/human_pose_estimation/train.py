@@ -34,7 +34,7 @@ if not os.path.exists(output_dir):
 annotations_dir = os.path.join(data_dir, "annotations")
 annotations_file = os.path.join(annotations_dir, "keypoints_annotations.tsv")
 
-image_size = 256
+image_size = 224
 num_epochs = 10000
 batch_size = 32
 learning_rate = 1e-4
@@ -58,7 +58,7 @@ train_aug = iaa.Sequential(
 
 dataloader = Dataloader(
   image_dir=data_dir,
-  should_load_into_memory=True,
+  should_load_into_memory=False,
   aug=train_aug,
   image_size=image_size
 )
@@ -81,6 +81,7 @@ print(model.summary())
 num_batches = int(dataloader.num_examples() / batch_size)
 logging.info(f"Training for {num_epochs} epochs on {num_batches} batches")
 for epoch in range(num_epochs):
+  save_model(epoch, 0, model, hyper_params)
   for step in range(num_batches):
     (x, y) = dataloader.get_batch(batch_size, show_images=False)
     with tf.GradientTape() as tape:
@@ -91,8 +92,11 @@ for epoch in range(num_epochs):
     optimizer.apply_gradients(zip(grads, model.trainable_weights))
     # if step % 10 == 0:
     logging.info(f"Epoch {epoch} Batch {step} Loss {loss_value}")
-    if step % 1000 == 0:
+    if step % 500 == 0:
       save_model(epoch, step, model, hyper_params)
+  # if epoch % 100 == 0:
+  #   save_model(epoch, step, model, hyper_params)
+
 
   logging.info(f"---- End Epoch {epoch} ----")
   dataloader.shuffle()
