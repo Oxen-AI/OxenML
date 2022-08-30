@@ -17,6 +17,7 @@ if len(sys.argv) < 3:
 def save_model(epoch, step, model, params):
   # Save model
   name = f"epoch_{epoch}_step_{step}"
+  print(f"Saving model {name}")
   model_dir = os.path.join(output_dir, name)
   model.save(model_dir)
 
@@ -36,14 +37,16 @@ annotations_file = os.path.join(annotations_dir, "keypoints_annotations.tsv")
 
 image_size = 224
 num_epochs = 10000
-batch_size = 32
+batch_size = 4
 learning_rate = 1e-4
+num_keypoints = 13
 
 hyper_params = {
   'image_size': image_size,
   'num_epochs': num_epochs,
   'batch_size': batch_size,
-  'learning_rate': learning_rate
+  'learning_rate': learning_rate,
+  'num_keypoints': num_keypoints
 }
 
 train_aug = iaa.Sequential(
@@ -60,6 +63,7 @@ dataloader = Dataloader(
   image_dir=data_dir,
   should_load_into_memory=True,
   aug=train_aug,
+  num_keypoints=num_keypoints,
   image_size=image_size
 )
 
@@ -82,7 +86,7 @@ keras.backend.clear_session()
 num_batches = int(dataloader.num_examples() / batch_size)
 logging.info(f"Training for {num_epochs} epochs on {num_batches} batches")
 for epoch in range(num_epochs):
-  save_model(epoch, 0, model, hyper_params)
+  # save_model(epoch, 0, model, hyper_params)
   for step in range(num_batches):
     (x, y) = dataloader.get_batch(batch_size, show_images=False)
     with tf.GradientTape() as tape:
@@ -93,10 +97,10 @@ for epoch in range(num_epochs):
     optimizer.apply_gradients(zip(grads, model.trainable_weights))
     # if step % 10 == 0:
     logging.info(f"Epoch {epoch} Batch {step} Loss {loss_value}")
-    if step % 500 == 0:
-      save_model(epoch, step, model, hyper_params)
-  # if epoch % 100 == 0:
-  #   save_model(epoch, step, model, hyper_params)
+    #if step % 500 == 0:
+    #  save_model(epoch, step, model, hyper_params)
+  if epoch % 100 == 0:
+    save_model(epoch, step, model, hyper_params)
 
 
   logging.info(f"---- End Epoch {epoch} ----")

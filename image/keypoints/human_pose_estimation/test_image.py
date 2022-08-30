@@ -24,10 +24,13 @@ params = {}
 with open(hyper_param_file, 'r') as f:
   params = json.load(f)
 
+print(f"Got hyperparams {params}")
+
 img_size = params['image_size']
 test_aug = iaa.Sequential([iaa.Resize(img_size, interpolation="linear")])
 dataloader = Dataloader(
   image_dir=None,
+  num_keypoints=params['num_keypoints'],
   aug=test_aug,
   image_size=img_size
 )
@@ -40,7 +43,7 @@ print(f"frame {frame.shape}")
 
 outputs = model.predict(frame)
 frame = frame.reshape(img_size, img_size, 3)
-outputs = outputs.reshape((img_size,img_size,17))
+outputs = outputs.reshape((img_size,img_size,dataloader.num_outputs()))
 print(outputs.shape)
 
 kps = []
@@ -99,7 +102,7 @@ ax_all = axes[1]
 ax_orig.imshow(frame)
 ax_all.imshow(frame)
 
-n_keypoints = 17
+n_keypoints = dataloader.num_outputs()
 step = 3
 current_keypoint = np.array(kps)
 # Since the last entry is the visibility flag, we discard it.

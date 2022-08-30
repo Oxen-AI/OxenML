@@ -57,12 +57,12 @@ class ImageKeypointsModel():
     previous_block_activation = x  # Set aside residual
 
     for filters in [128, 64, 32]:
-      x = keras.layers.Activation("sigmoid")(x)
+      x = keras.layers.Activation("relu")(x)
       x = keras.layers.Conv2D(filters, 3, padding="same")(x)
       x = keras.layers.BatchNormalization()(x)
       x = keras.layers.UpSampling2D(2)(x)
 
-      x = keras.layers.Activation("sigmoid")(x)
+      x = keras.layers.Activation("relu")(x)
       x = keras.layers.Conv2D(filters, 3, padding="same")(x)
       x = keras.layers.BatchNormalization()(x)
 

@@ -13,12 +13,12 @@ import math
 from util import visualize_keypoints
 
 class Dataloader():
-  def __init__(self, image_dir, aug, image_size, should_load_into_memory=False):
+  def __init__(self, image_dir, aug, image_size, num_keypoints, should_load_into_memory=False):
     self.image_dir = image_dir
     self.aug = aug
     self.n_channels = 3
     self.image_shape = (image_size, image_size, self.n_channels)
-    self.n_keypoints = 13
+    self.n_keypoints = num_keypoints
     self.should_load_into_memory = should_load_into_memory
     self.inputs = []
     self.outputs = []
