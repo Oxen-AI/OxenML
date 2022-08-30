@@ -58,7 +58,7 @@ train_aug = iaa.Sequential(
 
 dataloader = Dataloader(
   image_dir=data_dir,
-  should_load_into_memory=False,
+  should_load_into_memory=True,
   aug=train_aug,
   image_size=image_size
 )
@@ -77,6 +77,7 @@ model = ImageKeypointsModel(
 )
 (model, loss_fn, optimizer) = model.build()
 print(model.summary())
+keras.backend.clear_session()
 
 num_batches = int(dataloader.num_examples() / batch_size)
 logging.info(f"Training for {num_epochs} epochs on {num_batches} batches")

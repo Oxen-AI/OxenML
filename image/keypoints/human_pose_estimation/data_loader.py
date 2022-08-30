@@ -18,7 +18,7 @@ class Dataloader():
     self.aug = aug
     self.n_channels = 3
     self.image_shape = (image_size, image_size, self.n_channels)
-    self.n_keypoints = 17
+    self.n_keypoints = 13
     self.should_load_into_memory = should_load_into_memory
     self.inputs = []
     self.outputs = []
