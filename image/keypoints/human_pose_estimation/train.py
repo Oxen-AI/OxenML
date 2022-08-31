@@ -7,12 +7,10 @@ from data_loader import Dataloader
 from model import ImageKeypointsModel
 import imgaug.augmenters as iaa
 
+import argparse
+
 import logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s')
-
-if len(sys.argv) < 3:
-  print(f"Usage: {sys.argv[0]} <data-dir> <output-dir>")
-  exit()
 
 def save_model(epoch, step, model, params):
   # Save model
@@ -26,20 +24,38 @@ def save_model(epoch, step, model, params):
   with open(hyper_param_file, 'w') as f:
     f.write(json.dumps(params))
 
-data_dir = sys.argv[1]
-output_dir = sys.argv[2]
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-d', dest='data_dir', required=True, type=str, help="The base directory to look for the image data")
+parser.add_argument('-a', dest='annotations_file', required=True, type=str, help="The annotations file we are training on")
+parser.add_argument('-o', dest='output_dir', required=True, type=str, help="Where to store the models you have trained")
+parser.add_argument('-l', dest='load_model', default='', type=str, help="Which model to load")
+parser.add_argument('--n_keypoints', default=13, type=int, help="Which epoch to start on")
+parser.add_argument('--batch_size', default=32, type=int, help="Which epoch to start on")
+parser.add_argument('--start_epoch', default=0, type=int, help="Which epoch to start on")
+parser.add_argument('--num_epochs', default=10000, type=int, help="How long to train for")
+parser.add_argument('--save_step', default=-1, type=int, help="How often to save a model")
+parser.add_argument('--save_on_epoch', action='store_true', help="If you want to save on the epoch marker")
+# TODO: implement the keras dataloader 
+parser.add_argument('--load_into_memory', action='store_true', help="If you want to load all the data into memory")
+
+# Parse and print the results
+args = parser.parse_args()
+
+data_dir = args.data_dir
+annotations_file = args.annotations_file
+output_dir = args.output_dir
+start_epoch = args.start_epoch
 
 if not os.path.exists(output_dir):
   os.makedirs(output_dir)
 
-annotations_dir = os.path.join(data_dir, "annotations")
-annotations_file = os.path.join(annotations_dir, "keypoints_annotations.tsv")
-
 image_size = 224
-num_epochs = 10000
-batch_size = 4
+num_epochs = args.num_epochs
+batch_size = args.batch_size
+
 learning_rate = 1e-4
-num_keypoints = 13
+num_keypoints = args.n_keypoints
 
 hyper_params = {
   'image_size': image_size,
@@ -61,7 +77,7 @@ train_aug = iaa.Sequential(
 
 dataloader = Dataloader(
   image_dir=data_dir,
-  should_load_into_memory=True,
+  should_load_into_memory=args.load_into_memory,
   aug=train_aug,
   num_keypoints=num_keypoints,
   image_size=image_size
@@ -80,13 +96,23 @@ model = ImageKeypointsModel(
   learning_rate=learning_rate
 )
 (model, loss_fn, optimizer) = model.build()
+
+model_dir = args.load_model
+if model_dir != '':
+  print(f"Loading saved model from {model_dir}")
+  model = keras.models.load_model(model_dir)
+
 print(model.summary())
 keras.backend.clear_session()
 
+save_step = args.save_step
 num_batches = int(dataloader.num_examples() / batch_size)
-logging.info(f"Training for {num_epochs} epochs on {num_batches} batches")
-for epoch in range(num_epochs):
-  # save_model(epoch, 0, model, hyper_params)
+total_epochs = num_epochs + start_epoch
+logging.info(f"Training for {num_epochs} epochs starting on {start_epoch} on {num_batches} batches")
+for epoch in range(start_epoch, total_epochs):
+  if args.save_on_epoch:
+    save_model(epoch, 0, model, hyper_params)
+  
   for step in range(num_batches):
     (x, y) = dataloader.get_batch(batch_size, show_images=False)
     with tf.GradientTape() as tape:
@@ -97,10 +123,10 @@ for epoch in range(num_epochs):
     optimizer.apply_gradients(zip(grads, model.trainable_weights))
     # if step % 10 == 0:
     logging.info(f"Epoch {epoch} Batch {step} Loss {loss_value}")
-    #if step % 500 == 0:
-    #  save_model(epoch, step, model, hyper_params)
-  if epoch % 100 == 0:
-    save_model(epoch, step, model, hyper_params)
+    if save_step > 0 and step % save_step == 0:
+     save_model(epoch, step, model, hyper_params)
+  # if epoch % 100 == 0:
+  #   save_model(epoch, step, model, hyper_params)
 
 
   logging.info(f"---- End Epoch {epoch} ----")
