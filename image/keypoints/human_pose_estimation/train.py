@@ -42,6 +42,9 @@ parser.add_argument('--load_into_memory', action='store_true', help="If you want
 # Parse and print the results
 args = parser.parse_args()
 
+print("Training with args")
+print(args)
+
 data_dir = args.data_dir
 annotations_file = args.annotations_file
 output_dir = args.output_dir
