@@ -122,9 +122,10 @@ class Dataloader():
       # To apply our data augmentation pipeline, we first need to
       # form Keypoint objects with the original coordinates.
       for i in range(0, self.n_keypoints*step, step):
-        kps.append(Keypoint(x=line[i], y=line[i+1]))
-        visible.append(line[i+2] == '2')
+        kps.append(Keypoint(x=float(line[i]), y=float(line[i+1])))
+        visible.append(line[i+2] == '2' or line[i+2] == 'True')
 
+      # TODO use dataloader from OxenDatasets
       # We then project the original image and its keypoint coordinates.
       kps_obj = KeypointsOnImage(kps, shape=frame.shape)
       (new_image, new_kps_obj) = self.aug(image=frame, keypoints=kps_obj)

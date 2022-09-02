@@ -26,11 +26,13 @@ with open(hyper_param_file, 'r') as f:
 
 print(f"Got hyperparams {params}")
 
+num_keypoints = params['num_keypoints'] if 'num_keypoints' in params else 13
+
 img_size = params['image_size']
 test_aug = iaa.Sequential([iaa.Resize(img_size, interpolation="linear")])
 dataloader = Dataloader(
   image_dir=None,
-  num_keypoints=params['num_keypoints'],
+  num_keypoints=num_keypoints,
   aug=test_aug,
   image_size=img_size
 )
@@ -59,7 +61,7 @@ for i in range(dataloader.num_outputs()):
   val = heatmap[x][y]
   format_val = "{:.2f}".format(val)
 
-  if val > 0.1:
+  if val > 0.5:
     print(f"Got kp[{i}] {x},{y} val {format_val}")
 
     kps.append(x)
