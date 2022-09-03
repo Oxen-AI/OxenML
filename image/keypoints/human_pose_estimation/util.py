@@ -24,7 +24,7 @@ def visualize_keypoints(images, keypoints):
             print("GOT NP ARRAY")
             print(current_keypoint)
         else:
-            n_keypoints = 17
+            n_keypoints = 13
             step = 3
             current_keypoint = np.array(current_keypoint)
             # Since the last entry is the visibility flag, we discard it.

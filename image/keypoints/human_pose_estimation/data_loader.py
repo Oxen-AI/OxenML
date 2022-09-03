@@ -101,9 +101,28 @@ class Dataloader:
             self.reset()
         return True
 
+    def save_input_output(self, input, output, predictions, filename="output.png"):
+        # width = output.shape[0]
+        # height = output.shape[1]
+        num_channels = float(output.shape[2])
+        input_heatmap = np.sum(output, axis=2) / num_channels
+        output_heatmap = (np.sum(predictions, axis=2) / num_channels) * 255.0
+        print(output_heatmap.shape)
+
+        _, axes = plt.subplots(nrows=1, ncols=3, figsize=(8, 6))
+        [ax.axis("off") for ax in np.ravel(axes)]
+
+        axes[0].imshow(input)
+        axes[1].imshow(input_heatmap, interpolation="nearest")
+        axes[2].imshow(output_heatmap, interpolation="nearest")
+
+        plt.savefig(filename)
+        # plt.show()
+
     def get_batch(self, size, show_images=False):
         input_batch = np.zeros(
-            (size, self.image_shape[0], self.image_shape[1], self.image_shape[2])
+            (size, self.image_shape[0], self.image_shape[1], self.image_shape[2]),
+            dtype="uint8",
         )
         output_batch = np.empty(
             (size, self.image_shape[0], self.image_shape[1], self.n_keypoints),
@@ -134,7 +153,10 @@ class Dataloader:
             # TODO use dataloader from OxenDatasets
             # We then project the original image and its keypoint coordinates.
             kps_obj = KeypointsOnImage(kps, shape=frame.shape)
-            (new_image, new_kps_obj) = self.aug(image=frame, keypoints=kps_obj)
+            (new_image, new_kps_obj) = (
+                frame,
+                kps_obj,
+            )  # self.aug(image=frame, keypoints=kps_obj)
 
             if show_images:
                 debug_images.append(new_image)
@@ -179,12 +201,8 @@ class Dataloader:
                             continue
 
                         if x < output.shape[0] and y < output.shape[1]:
-                            output[x][y][i] = max(output[x][y][i], math.exp(-exp))
-                            output[x][y][i] = min(output[x][y][i], 1.0)
-                # heatmap = output[:,:,i]
-                # print(f"showing heatmap [{i}]")
-                # plt.imshow(heatmap, interpolation='nearest')
-                # plt.show()
+                            output[y][x][i] = max(output[y][x][i], math.exp(-exp))
+                            output[y][x][i] = min(output[y][x][i], 1.0)
 
             # Reshape to be (1, 1, n_keypoints * 2) for x,y
             output_batch[

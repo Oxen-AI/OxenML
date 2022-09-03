@@ -64,7 +64,13 @@ parser.add_argument(
     "--num_epochs", default=10000, type=int, help="How long to train for"
 )
 parser.add_argument(
-    "--save_step", default=-1, type=int, help="How often to save a model"
+    "--save_every", default=-1, type=int, help="How often to save a model"
+)
+parser.add_argument(
+    "--save_images_every",
+    default=1000,
+    type=int,
+    help="How often to save some sample predictions",
 )
 parser.add_argument(
     "--save_on_epoch",
@@ -109,11 +115,11 @@ hyper_params = {
 
 train_aug = iaa.Sequential(
     [
-        iaa.Resize(image_size, interpolation="linear"),
-        iaa.Fliplr(0.3),
+        # iaa.Resize(image_size, interpolation="linear"),
+        # iaa.Fliplr(0.3),
         # `Sometimes()` applies a function randomly to the inputs with
         # a given probability (0.3, in this case).
-        iaa.Sometimes(0.3, iaa.Affine(rotate=10, scale=(0.5, 0.7))),
+        # iaa.Sometimes(0.3, iaa.Affine(rotate=10, scale=(0.5, 0.7))),
     ]
 )
 
@@ -145,28 +151,39 @@ if model_dir != "":
 print(model.summary())
 keras.backend.clear_session()
 
-save_step = args.save_step
+save_every = args.save_every
 num_batches = int(dataloader.num_examples() / batch_size)
 total_epochs = num_epochs + start_epoch
 logging.info(
     f"Training for {num_epochs} epochs starting on {start_epoch} on {num_batches} batches"
 )
+total_step = 0
 for epoch in range(start_epoch, total_epochs):
     if args.save_on_epoch:
         save_model(epoch, 0, model, hyper_params)
 
     for step in range(num_batches):
+        total_step += 1
         (x, y) = dataloader.get_batch(batch_size, show_images=False)
         with tf.GradientTape() as tape:
-            logits = model(x, training=True)
-            loss_value = loss_fn(y, logits)
+            model_outputs = model(x, training=True)
+            loss_value = loss_fn(y, model_outputs)
 
         grads = tape.gradient(loss_value, model.trainable_weights)
         optimizer.apply_gradients(zip(grads, model.trainable_weights))
-        # if step % 10 == 0:
-        logging.info(f"Epoch {epoch} Batch {step} Loss {loss_value}")
-        if save_step > 0 and step % save_step == 0:
+        if step % 10 == 0:
+            logging.info(f"Epoch {epoch} Batch {step} Loss {loss_value}")
+
+        if save_every > 0 and step % save_every == 0:
             save_model(epoch, step, model, hyper_params)
+
+        if total_step % args.save_images_every == 0:
+            # Save an image at the end of every epoch
+            input = x[0]
+            output = y[0]
+            predictions = model_outputs[0]
+            path = os.path.join(output_dir, f"predictions_epoch_{epoch}_{step}.png")
+            dataloader.save_input_output(input, output, predictions, path)
     # if epoch % 100 == 0:
     #   save_model(epoch, step, model, hyper_params)
 

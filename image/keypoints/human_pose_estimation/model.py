@@ -26,12 +26,12 @@ class ImageKeypointsModel:
             input_shape=(self.image_size, self.image_size, 3),
             include_top=False,
         )
-        print(base_model.summary())
+        # print(base_model.summary())
 
         # Grab features from resolution 1/8
         features_1 = keras.models.Model(
             inputs=base_model.inputs,
-            outputs=base_model.get_layer("expanded_conv_6/expand/BatchNorm").output,
+            outputs=base_model.get_layer("expanded_conv_5/expand/BatchNorm").output,
         )(inputs)
 
         # Grab features from top of base model
@@ -42,10 +42,10 @@ class ImageKeypointsModel:
             features_2
         )
         conv_branch_f2 = keras.layers.BatchNormalization()(conv_branch_f2)
-        conv_branch_f2 = keras.layers.Activation("relu")(conv_branch_f2)
+        conv_branch_f2 = keras.layers.LeakyReLU()(conv_branch_f2)
 
         pool_branch_f2 = keras.layers.AveragePooling2D(
-            pool_size=(2, 2), strides=(16, 20)
+            pool_size=(2, 2), strides=(8, 8)
         )(features_2)
         pool_branch_f2 = keras.layers.Conv2D(hidden_size_middle, 1)(pool_branch_f2)
         pool_branch_f2 = keras.layers.Activation("sigmoid")(pool_branch_f2)
@@ -64,12 +64,12 @@ class ImageKeypointsModel:
         previous_block_activation = x  # Set aside residual
 
         for filters in [128, 64, 32]:
-            x = keras.layers.Activation("sigmoid")(x)
+            x = keras.layers.LeakyReLU()(x)
             x = keras.layers.Conv2D(filters, 3, padding="same")(x)
             x = keras.layers.BatchNormalization()(x)
             x = keras.layers.UpSampling2D(2)(x)
 
-            x = keras.layers.Activation("sigmoid")(x)
+            x = keras.layers.LeakyReLU()(x)
             x = keras.layers.Conv2D(filters, 3, padding="same")(x)
             x = keras.layers.BatchNormalization()(x)
 
