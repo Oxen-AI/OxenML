@@ -180,7 +180,7 @@ for epoch in range(start_epoch, total_epochs):
         if total_step % args.save_images_every == 0:
             # Save an image at the end of every epoch
             path = os.path.join(output_dir, f"predictions_epoch_{epoch}_{step}.png")
-            dataloader.save_inputs_outputs(x, y, model_outputs, path)
+            dataloader.save_inputs_outputs(x[0:4], y[0:4], model_outputs[0:4], path)
     # if epoch % 100 == 0:
     #   save_model(epoch, step, model, hyper_params)
 
