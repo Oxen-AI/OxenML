@@ -105,7 +105,7 @@ class Dataloader:
         num_rows = inputs.shape[0]
         _, axes = plt.subplots(nrows=num_rows, ncols=3, figsize=(8, 6))
         [ax.axis("off") for ax in np.ravel(axes)]
-        
+
         for i in range(num_rows):
             input = inputs[i]
             output = outputs[i]
@@ -114,9 +114,9 @@ class Dataloader:
             input_heatmap = np.sum(output, axis=2) / num_channels
             output_heatmap = (np.sum(pred, axis=2) / num_channels) * 255.0
 
-            axes[i,0].imshow(input)
-            axes[i,1].imshow(input_heatmap, interpolation="nearest")
-            axes[i,2].imshow(output_heatmap, interpolation="nearest")
+            axes[i, 0].imshow(input)
+            axes[i, 1].imshow(input_heatmap, interpolation="nearest")
+            axes[i, 2].imshow(output_heatmap, interpolation="nearest")
 
         plt.savefig(filename)
         # plt.show()

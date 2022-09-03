@@ -71,6 +71,14 @@ class HumanPoseKeypoints:
         plt.tight_layout(pad=2.0)
         plt.show()
 
+    def is_all_zeros(self):
+        # Check if it is all zeros, then there is no one in the image...
+        all_zeros = True
+        for k in self.keypoints:
+            if k.x != 0 or k.y != 0:
+                all_zeros = False
+        return all_zeros
+
     def parse_tsv(self, data):
         self.keypoints = []  # clear / initialize keypoints
         self.parse_array(data.split("\t"))
@@ -102,7 +110,7 @@ class HumanPoseKeypoints:
 
     def to_tsv(self):
         return "\t".join(
-            [f"{k.x}\t{k.y}\t{2 if k.confidence > 0.5 else 0}" for k in self.keypoints]
+            [f"{k.x}\t{k.y}\t{'{:.2f}'.format(k.confidence)}" for k in self.keypoints]
         )
 
 
@@ -164,6 +172,11 @@ class OxenHumanKeypointsAnnotation(HumanPoseKeypoints):
         annotation.parse_heatmap_output(output)
         return annotation
 
+    def from_tsv(line):
+        annotation = OxenHumanKeypointsAnnotation()
+        annotation.parse_tsv(line)
+        return annotation
+
     def from_coco(coco_kps):
         is_visible = False
         sum_x = 0.0
@@ -192,59 +205,12 @@ class OxenHumanKeypointsAnnotation(HumanPoseKeypoints):
         return oxen_kps
 
 
-class MSCocoKeypointsDataset:
-    def __init__(self, annotation_file, collapse_head=False):
-        self.collapse_head = collapse_head
-        self.annotations = self._load_dataset(annotation_file)
+class PersonKeypointsDataset:
+    def __init__(self):
+        self.annotations = []
 
-    def _load_dataset(self, annotation_file):
-        if not os.path.exists(annotation_file):
-            raise ValueError("Annotation file not found")
-
-        print(f"Loading dataset from {annotation_file}")
-        with open(annotation_file) as json_file:
-            data = json.load(json_file)
-
-        # Find all image files and ids
-        file_annotations = {}
-        for item in data["images"]:
-            id = str(item["id"])
-            file_annotations[id] = FileAnnotations(file=item["file_name"])
-
-        print(f"Got {len(file_annotations)} image files")
-
-        # Grab all the annotations and organize them by image
-        print(f"Parsing {len(data['annotations'])} annotations")
-        for item in data["annotations"]:
-            category_num = int(item["category_id"])
-            iscrowd = item["iscrowd"] == 1
-            # --- Check if category is person not in a crowd
-            if category_num == 1 and not iscrowd:
-                id = str(item["image_id"])
-                raw_kps = item["keypoints"]
-
-                if self._all_zeros(raw_kps):
-                    continue
-
-                coco_kp = CocoHumanKeypoints()
-                coco_kp.parse_array(raw_kps)
-
-                if self.collapse_head:
-                    file_annotations[id].add_annotation(
-                        OxenHumanKeypointsAnnotation.from_coco(coco_kp)
-                    )
-                else:
-                    file_annotations[id].add_annotation(coco_kp)
-
-        return file_annotations
-
-    def _all_zeros(self, kps):
-        # Check if it is all zeros, then there is no one in the image...
-        all_zeros = True
-        for k in kps:
-            if k != 0:
-                all_zeros = False
-        return all_zeros
+    def list_annotations(self):
+        return self.annotations
 
     def write_tsv(self, base_img_dir, outfile):
         self.write_output(base_img_dir, outfile, output_type="tsv")
@@ -277,3 +243,83 @@ class MSCocoKeypointsDataset:
                     f.write(f"{file_annotations.to_json()}\n")
                 else:
                     raise ValueError(f"Unknown argument: {output_type}")
+
+
+class TSVKeypointsDataset(PersonKeypointsDataset):
+    def __init__(self, annotation_file):
+        super().__init__()
+        self.annotations = self._load_dataset(annotation_file)
+
+    def _load_dataset(self, annotation_file):
+        with open(annotation_file) as f:
+            file_annotations = {}
+            delimiter = "\t"
+            for line in f:
+
+                line = line.strip()
+                split_line = line.split(delimiter)
+                filename = split_line[0]
+
+                if not filename in file_annotations:
+                    file_annotations[filename] = FileAnnotations(file=filename)
+
+                a = OxenHumanKeypointsAnnotation.from_tsv(
+                    delimiter.join(split_line[1:])
+                )
+                file_annotations[filename].annotations.append(a)
+
+            annotations = []
+            for (_id, annotation) in file_annotations.items():
+                annotations.append(annotation)
+            return annotations
+
+
+class MSCocoKeypointsDataset(PersonKeypointsDataset):
+    def __init__(self, annotation_file, collapse_head=False):
+        super().__init__()
+        self.annotations = self._load_dataset(annotation_file, collapse_head)
+
+    def _load_dataset(self, annotation_file, collapse_head):
+        if not os.path.exists(annotation_file):
+            raise ValueError("Annotation file not found")
+
+        print(f"Loading dataset from {annotation_file}")
+        with open(annotation_file) as json_file:
+            data = json.load(json_file)
+
+        # Find all image files and ids
+        file_annotations = {}
+        for item in data["images"]:
+            id = str(item["id"])
+            file_annotations[id] = FileAnnotations(file=item["file_name"])
+
+        print(f"Got {len(file_annotations)} image files")
+
+        # Grab all the annotations and organize them by image
+        print(f"Parsing {len(data['annotations'])} annotations")
+        for item in data["annotations"]:
+            category_num = int(item["category_id"])
+            iscrowd = item["iscrowd"] == 1
+            # --- Check if category is person not in a crowd
+            if category_num == 1 and not iscrowd:
+                id = str(item["image_id"])
+                raw_kps = item["keypoints"]
+
+                coco_kp = CocoHumanKeypoints()
+                coco_kp.parse_array(raw_kps)
+
+                if coco_kp.is_all_zeros():
+                    continue
+
+                if collapse_head:
+                    file_annotations[id].add_annotation(
+                        OxenHumanKeypointsAnnotation.from_coco(coco_kp)
+                    )
+                else:
+                    file_annotations[id].add_annotation(coco_kp)
+
+        annotations = []
+        for (_id, annotation) in file_annotations.iter():
+            annotations.append(annotation)
+
+        return annotations
