@@ -101,20 +101,22 @@ class Dataloader:
             self.reset()
         return True
 
-    def save_input_output(self, input, output, predictions, filename="output.png"):
-        # width = output.shape[0]
-        # height = output.shape[1]
-        num_channels = float(output.shape[2])
-        input_heatmap = np.sum(output, axis=2) / num_channels
-        output_heatmap = (np.sum(predictions, axis=2) / num_channels) * 255.0
-        print(output_heatmap.shape)
-
-        _, axes = plt.subplots(nrows=1, ncols=3, figsize=(8, 6))
+    def save_inputs_outputs(self, inputs, outputs, predictions, filename="output.png"):
+        num_rows = inputs.shape[0]
+        _, axes = plt.subplots(nrows=num_rows, ncols=3, figsize=(8, 6))
         [ax.axis("off") for ax in np.ravel(axes)]
+        
+        for i in range(num_rows):
+            input = inputs[i]
+            output = outputs[i]
+            pred = predictions[i]
+            num_channels = float(output.shape[2])
+            input_heatmap = np.sum(output, axis=2) / num_channels
+            output_heatmap = (np.sum(pred, axis=2) / num_channels) * 255.0
 
-        axes[0].imshow(input)
-        axes[1].imshow(input_heatmap, interpolation="nearest")
-        axes[2].imshow(output_heatmap, interpolation="nearest")
+            axes[i,0].imshow(input)
+            axes[i,1].imshow(input_heatmap, interpolation="nearest")
+            axes[i,2].imshow(output_heatmap, interpolation="nearest")
 
         plt.savefig(filename)
         # plt.show()

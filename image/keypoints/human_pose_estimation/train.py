@@ -115,11 +115,11 @@ hyper_params = {
 
 train_aug = iaa.Sequential(
     [
-        # iaa.Resize(image_size, interpolation="linear"),
-        # iaa.Fliplr(0.3),
+        iaa.Resize(image_size, interpolation="linear"),
+        iaa.Fliplr(0.3),
         # `Sometimes()` applies a function randomly to the inputs with
         # a given probability (0.3, in this case).
-        # iaa.Sometimes(0.3, iaa.Affine(rotate=10, scale=(0.5, 0.7))),
+        iaa.Sometimes(0.3, iaa.Affine(rotate=10, scale=(0.5, 0.7))),
     ]
 )
 
@@ -179,11 +179,8 @@ for epoch in range(start_epoch, total_epochs):
 
         if total_step % args.save_images_every == 0:
             # Save an image at the end of every epoch
-            input = x[0]
-            output = y[0]
-            predictions = model_outputs[0]
             path = os.path.join(output_dir, f"predictions_epoch_{epoch}_{step}.png")
-            dataloader.save_input_output(input, output, predictions, path)
+            dataloader.save_inputs_outputs(x, y, model_outputs, path)
     # if epoch % 100 == 0:
     #   save_model(epoch, step, model, hyper_params)
 
