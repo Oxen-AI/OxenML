@@ -57,7 +57,7 @@ print(f"Loading dataset... {annotations_file}")
 dataset = TSVKeypointsDataset(annotation_file=annotations_file)
 print(f"Running model on {len(dataset.annotations)} files")
 model_annotations = []
-for annotation in tqdm(dataset.annotations):
+for (key, annotation) in tqdm(dataset.annotations.items()):
     fullpath = os.path.join(args.data_dir, annotation.file)
     frame = plt.imread(fullpath)
     frame = frame.reshape(1, img_size, img_size, 3)
