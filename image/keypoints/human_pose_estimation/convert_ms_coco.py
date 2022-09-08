@@ -9,7 +9,7 @@ def main():
     )
 
     parser.add_argument(
-        "-i", "--input", type=str, required=True, help="The input directory of images"
+        "-d", "--data", type=str, required=True, help="The input directory of images"
     )
     parser.add_argument(
         "-a",
@@ -17,12 +17,6 @@ def main():
         type=str,
         required=True,
         help="The input coco annotations json file",
-    )
-    parser.add_argument(
-        "--output_images",
-        type=str,
-        default="",
-        help="The output directory you want to put the annotations and images",
     )
     parser.add_argument(
         "--output_annotations",
@@ -34,7 +28,7 @@ def main():
         "-p",
         "--prefix",
         type=str,
-        required=True,
+        default='',
         help="The prefix you want to use for annotations and outputs",
     )
     parser.add_argument(
@@ -50,9 +44,10 @@ def main():
         help="Filter out images with multiple people",
     )
     parser.add_argument(
-        "--collapse_head",
-        action="store_true",
-        help="Convert annotations to a collapse the nose,left_eye,right_eye,left_ear,right_ear into one head keypoint",
+        "--from_type",
+        type=str,
+        default="mscoco",
+        help="Convert annotations from type to our oxen representation with 13 keypoints [mscoco, ai_challenger]",
     )
 
     args = parser.parse_args()
@@ -62,7 +57,7 @@ def main():
     one_person_per_image = args.one_person_per_image
     output_annotations = args.output_annotations
 
-    dataset = MSCocoKeypointsDataset(annotations_file, collapse_head=args.collapse_head)
+    dataset = MSCocoKeypointsDataset(annotations_file, input_type=args.from_type)
     dataset.write_output(
         base_img_dir=output_prefix,
         one_person_per_image=one_person_per_image,

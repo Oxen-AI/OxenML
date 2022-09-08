@@ -155,6 +155,11 @@ class HumanPoseKeypointAnnotation:
         self.keypoints = []  # clear / initialize keypoints
         self.parse_array(data.split("\t"))
 
+    def parse_keypoints(self, kps, confidence=1.0):
+        self.keypoints = []  # clear / initialize keypoints
+        for kp in kps:
+            self.keypoints.append(OxenImageKeypoint(x=kp.x, y=kp.y, confidence=confidence))
+
     def parse_array(self, data):
         step = 3
         n_keypoints = int(len(data) / step)
@@ -188,7 +193,7 @@ class HumanPoseKeypointAnnotation:
 
 class CocoHumanKeypointsAnnotation(HumanPoseKeypointAnnotation):
     """
-    CocoSkeleton has the 17 keypoints from the MSCoco dataset
+    17 keypoints from the MSCoco dataset
     """
     joints = [
         "nose",
@@ -208,6 +213,32 @@ class CocoHumanKeypointsAnnotation(HumanPoseKeypointAnnotation):
         "right_knee",
         "left_ankle",
         "right_ankle",
+    ]
+
+    def __init__(self):
+        super().__init__(
+            joints=CocoHumanKeypointsAnnotation.joints
+        )
+
+class AIChallengerKeypointsAnnotation(HumanPoseKeypointAnnotation):
+    """
+    14 keypoints from the AI Challenger dataset
+    """
+    joints = [
+        "top_head",
+        "neck",
+        "left_shoulder",
+        "right_shoulder",
+        "left_elbow",
+        "right_elbow",
+        "left_wrist",
+        "right_wrist",
+        "left_hip",
+        "right_hip",
+        "left_knee",
+        "right_knee",
+        "left_ankle",
+        "right_ankle"
     ]
 
     def __init__(self):
@@ -251,14 +282,25 @@ class OxenHumanKeypointsAnnotation(HumanPoseKeypointAnnotation):
         annotation.parse_tsv(line)
         return annotation
 
+    def from_keypoints(kps):
+        annotation = OxenHumanKeypointsAnnotation()
+        annotation.parse_keypoints(kps)
+        return annotation
+
     def from_coco(coco_kps):
+        # first five joints (nose, left_eye, left_ear, right_eye, right_ear) in mscoco collapse down to head
+        return OxenHumanKeypointsAnnotation._collapse_top_n(coco_kps, 5)
+    
+    def from_ai_challenger(coco_kps):
+        # first 2 joints in mscoco (head, neck) collapse down to head
+        return OxenHumanKeypointsAnnotation._collapse_top_n(coco_kps, 2)
+    
+    def _collapse_top_n(coco_kps, n:int):
         is_visible = False
         sum_x = 0.0
         sum_y = 0.0
         total = 0.0
-        # first five joints in mscoco collapse down to head
-        num_to_sum = 5
-        for i in range(num_to_sum):
+        for i in range(n):
             kp = coco_kps.keypoints[i]
             sum_x += kp.x
             sum_y += kp.y
@@ -273,7 +315,7 @@ class OxenHumanKeypointsAnnotation(HumanPoseKeypointAnnotation):
         oxen_kps.keypoints.append(
             OxenImageKeypoint(x=avg_x, y=avg_y, confidence=confidence)
         )
-        for kp in coco_kps.keypoints[num_to_sum:]:
+        for kp in coco_kps.keypoints[n:]:
             oxen_kps.keypoints.append(kp)
 
         return oxen_kps
@@ -295,7 +337,7 @@ class PersonKeypointsDataset:
             files.append(file)
         return files
 
-    def get_annotation(self, key):
+    def get_annotations(self, key):
         return self.annotations[key]
 
     def write_tsv(self, base_img_dir, outfile):
@@ -307,7 +349,8 @@ class PersonKeypointsDataset:
     def write_output(
         self, base_img_dir, outfile, one_person_per_image=False, output_type="tsv"
     ):
-        print(f"Writing {len(self.annotations)} annotations to {outfile}")
+        print(f"Writing annotations to {outfile}")
+        num_outputted = 0
         with open(outfile, "w") as f:
             for id in self.annotations.keys():
                 file_annotations = self.annotations[id]
@@ -329,6 +372,9 @@ class PersonKeypointsDataset:
                     f.write(f"{file_annotations.to_json()}\n")
                 else:
                     raise ValueError(f"Unknown argument: {output_type}")
+                num_outputted += 1
+        print(f"Wrote {num_outputted} annotations to {outfile}")
+
 
 
 class TSVKeypointsDataset(PersonKeypointsDataset):
@@ -358,11 +404,22 @@ class TSVKeypointsDataset(PersonKeypointsDataset):
 
 
 class MSCocoKeypointsDataset(PersonKeypointsDataset):
-    def __init__(self, annotation_file, collapse_head=False):
+    def __init__(self, annotation_file:str, input_type:str='mscoco'):
         super().__init__()
-        self.annotations = self._load_dataset(annotation_file, collapse_head)
+        self.annotations = self._load_dataset(annotation_file, input_type)
 
-    def _load_dataset(self, annotation_file, collapse_head):
+    def _parse_raw_keypoints(self, raw_kps, input_type:str):
+        if 'mscoco' == input_type:
+            coco_kp = CocoHumanKeypointsAnnotation()
+            coco_kp.parse_array(raw_kps)
+            return coco_kp
+        elif 'ai_challenger' == input_type:
+            coco_kp = AIChallengerKeypointsAnnotation()
+            coco_kp.parse_array(raw_kps)
+            return coco_kp
+        raise NotImplementedError(f"Unknkown keypoint type {input_type}")
+
+    def _load_dataset(self, annotation_file, input_type:str):
         if not os.path.exists(annotation_file):
             raise ValueError("Annotation file not found")
 
@@ -382,24 +439,18 @@ class MSCocoKeypointsDataset(PersonKeypointsDataset):
         print(f"Parsing {len(data['annotations'])} annotations")
         for item in data["annotations"]:
             category_num = int(item["category_id"])
-            iscrowd = item["iscrowd"] == 1
+            iscrowd = "iscrowd" in item and item["iscrowd"] == 1
             # --- Check if category is person not in a crowd
             if category_num == 1 and not iscrowd:
                 id = str(item["image_id"])
                 raw_kps = item["keypoints"]
 
-                coco_kp = CocoHumanKeypointsAnnotation()
-                coco_kp.parse_array(raw_kps)
+                kp = self._parse_raw_keypoints(raw_kps, input_type)
 
-                if coco_kp.is_all_zeros():
+                if kp.is_all_zeros():
                     continue
 
-                if collapse_head:
-                    file_annotations[id].add_annotation(
-                        OxenHumanKeypointsAnnotation.from_coco(coco_kp)
-                    )
-                else:
-                    file_annotations[id].add_annotation(coco_kp)
+                file_annotations[id].add_annotation(kp)
 
         annotations = {}
         for (_id, annotation) in file_annotations.items():
