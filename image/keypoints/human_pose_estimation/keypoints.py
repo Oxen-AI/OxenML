@@ -6,11 +6,13 @@ import numpy as np
 from matplotlib import pyplot as plt
 from enum import Enum
 
+
 class PredictionOutcome(Enum):
     TRUE_POSITIVE = 1
     FALSE_POSITIVE = 2
     TRUE_NEGATIVE = 3
     FALSE_NEGATIVE = 4
+
 
 class OxenImageKeypoint:
     def __init__(self, x, y, confidence=0.0):
@@ -26,6 +28,7 @@ class OxenImageKeypoint:
 
     def within_threshold(self, other, threshold):
         return abs(other.x - self.x) < threshold and abs(other.y - self.y) < threshold
+
 
 class FileAnnotations:
     def __init__(self, file):
@@ -64,17 +67,17 @@ class BoundingBox:
     def from_human_kp(annotation):
         min_x = sys.float_info.max
         min_y = sys.float_info.max
-        
+
         max_x = 0
         max_y = 0
-        
+
         for kp in annotation.keypoints:
             if kp.x < min_x and kp.confidence > 0.5:
                 min_x = kp.x
 
             if kp.y < min_y and kp.confidence > 0.5:
                 min_y = kp.y
-                
+
             if kp.x > max_x and kp.confidence > 0.5:
                 max_x = kp.x
 
@@ -84,6 +87,7 @@ class BoundingBox:
         width = max_x - min_x
         height = max_y - min_y
         return BoundingBox(min_x=min_x, min_y=min_y, width=width, height=height)
+
 
 class HumanPoseKeypointAnnotation:
     def __init__(self, joints):
@@ -95,7 +99,7 @@ class HumanPoseKeypointAnnotation:
 
     def compute_outcomes(self, prediction, confidence_thresh=0.5, fract_torso=0.2):
         outcomes = []
-        
+
         bounding_box = BoundingBox.from_human_kp(self)
         # print(f"Got BB {bounding_box}")
         diag = bounding_box.diagonal()
@@ -105,18 +109,30 @@ class HumanPoseKeypointAnnotation:
             gt_kp = self.keypoints[i]
             pred_kp = prediction.keypoints[i]
             # print(f"Comparing {joint} {gt_kp} -> {pred_kp} thresh {thresh}")
-            if gt_kp.within_threshold(pred_kp, thresh) and pred_kp.confidence > confidence_thresh:
+            if (
+                gt_kp.within_threshold(pred_kp, thresh)
+                and pred_kp.confidence > confidence_thresh
+            ):
                 outcomes.append(PredictionOutcome.TRUE_POSITIVE)
-            
-            if not gt_kp.within_threshold(pred_kp, thresh) and pred_kp.confidence > confidence_thresh:
+
+            if (
+                not gt_kp.within_threshold(pred_kp, thresh)
+                and pred_kp.confidence > confidence_thresh
+            ):
                 outcomes.append(PredictionOutcome.FALSE_POSITIVE)
-                
-            if gt_kp.within_threshold(pred_kp, thresh) and pred_kp.confidence < confidence_thresh:
+
+            if (
+                gt_kp.within_threshold(pred_kp, thresh)
+                and pred_kp.confidence < confidence_thresh
+            ):
                 outcomes.append(PredictionOutcome.FALSE_NEGATIVE)
-            
-            if not gt_kp.within_threshold(pred_kp, thresh) and pred_kp.confidence < confidence_thresh:
+
+            if (
+                not gt_kp.within_threshold(pred_kp, thresh)
+                and pred_kp.confidence < confidence_thresh
+            ):
                 outcomes.append(PredictionOutcome.TRUE_NEGATIVE)
-        
+
         return outcomes
 
     def plot_image_file(self, image_file, color="#FF0000", threshold=0.5):
@@ -158,7 +174,9 @@ class HumanPoseKeypointAnnotation:
     def parse_keypoints(self, kps, confidence=1.0):
         self.keypoints = []  # clear / initialize keypoints
         for kp in kps:
-            self.keypoints.append(OxenImageKeypoint(x=kp.x, y=kp.y, confidence=confidence))
+            self.keypoints.append(
+                OxenImageKeypoint(x=kp.x, y=kp.y, confidence=confidence)
+            )
 
     def parse_array(self, data):
         step = 3
@@ -168,8 +186,16 @@ class HumanPoseKeypointAnnotation:
             x = float(data[i])
             y = float(data[i + 1])
             is_vis_row = data[i + 2]
-            confidence = 1.0 if is_vis_row == 2.0 or is_vis_row == "True" else float(is_vis_row)
+            confidence = (
+                1.0 if is_vis_row == 2.0 or is_vis_row == "True" else float(is_vis_row)
+            )
             self.keypoints.append(OxenImageKeypoint(x=x, y=y, confidence=confidence))
+
+        # Sanity check
+        if len(self.keypoints) != len(self.joints):
+            raise Exception(
+                f"Could not parse array into keypoints {len(self.keypoints)} != {len(self.joints)}"
+            )
 
     def parse_heatmap_output(self, outputs):
         n_keypoints = outputs.shape[2]
@@ -195,6 +221,7 @@ class CocoHumanKeypointsAnnotation(HumanPoseKeypointAnnotation):
     """
     17 keypoints from the MSCoco dataset
     """
+
     joints = [
         "nose",
         "left_eye",
@@ -216,14 +243,14 @@ class CocoHumanKeypointsAnnotation(HumanPoseKeypointAnnotation):
     ]
 
     def __init__(self):
-        super().__init__(
-            joints=CocoHumanKeypointsAnnotation.joints
-        )
+        super().__init__(joints=CocoHumanKeypointsAnnotation.joints)
+
 
 class AIChallengerKeypointsAnnotation(HumanPoseKeypointAnnotation):
     """
     14 keypoints from the AI Challenger dataset
     """
+
     joints = [
         "top_head",
         "neck",
@@ -238,20 +265,19 @@ class AIChallengerKeypointsAnnotation(HumanPoseKeypointAnnotation):
         "left_knee",
         "right_knee",
         "left_ankle",
-        "right_ankle"
+        "right_ankle",
     ]
 
     def __init__(self):
-        super().__init__(
-            joints=CocoHumanKeypointsAnnotation.joints
-        )
+        super().__init__(joints=AIChallengerKeypointsAnnotation.joints)
 
 
 class OxenHumanKeypointsAnnotation(HumanPoseKeypointAnnotation):
     """
     OxenSkeleton has 13 keypoints as a subset of other pose keypoint systems
     """
-    joints =[
+
+    joints = [
         "head",
         "left_shoulder",
         "right_shoulder",
@@ -268,9 +294,7 @@ class OxenHumanKeypointsAnnotation(HumanPoseKeypointAnnotation):
     ]
 
     def __init__(self):
-        super().__init__(
-            joints=OxenHumanKeypointsAnnotation.joints
-        )
+        super().__init__(joints=OxenHumanKeypointsAnnotation.joints)
 
     def from_nd_array(output):
         annotation = OxenHumanKeypointsAnnotation()
@@ -290,12 +314,12 @@ class OxenHumanKeypointsAnnotation(HumanPoseKeypointAnnotation):
     def from_coco(coco_kps):
         # first five joints (nose, left_eye, left_ear, right_eye, right_ear) in mscoco collapse down to head
         return OxenHumanKeypointsAnnotation._collapse_top_n(coco_kps, 5)
-    
+
     def from_ai_challenger(coco_kps):
         # first 2 joints in mscoco (head, neck) collapse down to head
         return OxenHumanKeypointsAnnotation._collapse_top_n(coco_kps, 2)
-    
-    def _collapse_top_n(coco_kps, n:int):
+
+    def _collapse_top_n(coco_kps, n: int):
         is_visible = False
         sum_x = 0.0
         sum_y = 0.0
@@ -318,6 +342,8 @@ class OxenHumanKeypointsAnnotation(HumanPoseKeypointAnnotation):
         for kp in coco_kps.keypoints[n:]:
             oxen_kps.keypoints.append(kp)
 
+        assert len(oxen_kps.keypoints) == len(OxenHumanKeypointsAnnotation.joints)
+
         return oxen_kps
 
 
@@ -330,7 +356,7 @@ class PersonKeypointsDataset:
         for (_, a) in self.annotations.items():
             annotations.append(a)
         return annotations
-    
+
     def list_inputs(self):
         files = []
         for (file, _) in self.annotations.items():
@@ -376,7 +402,6 @@ class PersonKeypointsDataset:
         print(f"Wrote {num_outputted} annotations to {outfile}")
 
 
-
 class TSVKeypointsDataset(PersonKeypointsDataset):
     def __init__(self, annotation_file):
         super().__init__()
@@ -395,31 +420,38 @@ class TSVKeypointsDataset(PersonKeypointsDataset):
                 if not filename in file_annotations:
                     file_annotations[filename] = FileAnnotations(file=filename)
 
-                a = OxenHumanKeypointsAnnotation.from_tsv(
-                    delimiter.join(split_line[1:])
-                )
-                file_annotations[filename].annotations.append(a)
+                try:
+                    a = OxenHumanKeypointsAnnotation.from_tsv(
+                        delimiter.join(split_line[1:])
+                    )
+                    file_annotations[filename].annotations.append(a)
+                except Exception as e:
+                    print(f"Err: {e}")
+                    print(line)
+                    exit()
 
             return file_annotations
 
 
 class MSCocoKeypointsDataset(PersonKeypointsDataset):
-    def __init__(self, annotation_file:str, input_type:str='mscoco'):
+    def __init__(self, annotation_file: str, input_type: str = "mscoco"):
         super().__init__()
         self.annotations = self._load_dataset(annotation_file, input_type)
 
-    def _parse_raw_keypoints(self, raw_kps, input_type:str):
-        if 'mscoco' == input_type:
+    def _parse_raw_keypoints(self, raw_kps, input_type: str):
+        if "mscoco" == input_type:
             coco_kp = CocoHumanKeypointsAnnotation()
             coco_kp.parse_array(raw_kps)
-            return coco_kp
-        elif 'ai_challenger' == input_type:
-            coco_kp = AIChallengerKeypointsAnnotation()
-            coco_kp.parse_array(raw_kps)
-            return coco_kp
+            kp = OxenHumanKeypointsAnnotation.from_coco(coco_kp)
+            return kp
+        elif "ai_challenger" == input_type:
+            ai_challenger_kp = AIChallengerKeypointsAnnotation()
+            ai_challenger_kp.parse_array(raw_kps)
+            kp = OxenHumanKeypointsAnnotation.from_ai_challenger(ai_challenger_kp)
+            return kp
         raise NotImplementedError(f"Unknkown keypoint type {input_type}")
 
-    def _load_dataset(self, annotation_file, input_type:str):
+    def _load_dataset(self, annotation_file, input_type: str):
         if not os.path.exists(annotation_file):
             raise ValueError("Annotation file not found")
 

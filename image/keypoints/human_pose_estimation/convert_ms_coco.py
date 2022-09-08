@@ -28,7 +28,7 @@ def main():
         "-p",
         "--prefix",
         type=str,
-        default='',
+        default="",
         help="The prefix you want to use for annotations and outputs",
     )
     parser.add_argument(

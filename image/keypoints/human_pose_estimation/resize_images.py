@@ -12,6 +12,7 @@ from keypoints import FileAnnotations
 from keypoints import OxenHumanKeypointsAnnotation
 from keypoints import TSVKeypointsDataset
 
+
 def main():
 
     parser = argparse.ArgumentParser(
@@ -34,6 +35,13 @@ def main():
     )
     parser.add_argument(
         "-s", "--size", type=int, default=224, help="Size of output images"
+    )
+    parser.add_argument(
+        "-k",
+        "--num_keypoints",
+        type=int,
+        default=13,
+        help="Sanity check on number of keypoints you are processing and make sure it is consistent",
     )
     parser.add_argument(
         "--output_images",
@@ -66,7 +74,7 @@ def main():
             print(f"Could not find file: {fullpath}")
             exit()
         fullpaths.append(fullpath)
-    
+
     print(f"Resizing {len(filenames)} images to {args.size}x{args.size}")
     with open(args.output_annotations, "w") as outfile:
         for i in tqdm(range(len(filenames))):
@@ -76,8 +84,16 @@ def main():
             annotations = dataset.get_annotations(filename)
             file_annotation = FileAnnotations(file=filename)
             for (i, annotation) in enumerate(annotations.annotations):
+                if len(annotation.keypoints) != args.num_keypoints:
+                    print(
+                        f"Invalid # keypoints {len(annotation.keypoints)} != {args.num_keypoints}"
+                    )
+                    exit()
+
                 # Need to convert to imgaug Keypoint objects
-                img_aug_kps = [Keypoint(x=point.x, y=point.y) for point in annotation.keypoints]
+                img_aug_kps = [
+                    Keypoint(x=point.x, y=point.y) for point in annotation.keypoints
+                ]
 
                 # We then project the original image to resize the keypoint coordinates.
                 frame = plt.imread(fullpath)
@@ -93,7 +109,7 @@ def main():
                     if not os.path.exists(parent):
                         os.makedirs(parent)
                     plt.imsave(out_filename, image, format="jpg")
-                    
+
                     # Only add the annotation if we successfully converted the image
                     file_annotation.annotations.append(new_ann)
                 except:

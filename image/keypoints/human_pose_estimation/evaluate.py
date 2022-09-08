@@ -61,7 +61,7 @@ for (input_i, file) in enumerate(ground_truth.list_inputs()):
     pred = predictions.get_annotation(file).annotations[0]
 
     outcomes = gt.compute_outcomes(pred, confidence_thresh=thresh)
-    
+
     for (outcome_i, outcome) in enumerate(outcomes):
         joint = gt.joints[outcome_i]
         joint_outcomes[joint][outcome] += 1.0
@@ -78,10 +78,12 @@ with open(args.output, "w") as f:
         sum_precision += precision
         sum_recall += recall
 
-        line = f"{joint}\n  Precision@{thresh}: {precision}\n  Recall@{thresh}: {recall}\n"
+        line = (
+            f"{joint}\n  Precision@{thresh}: {precision}\n  Recall@{thresh}: {recall}\n"
+        )
         print(line)
         f.write(line)
-        
+
     avg_precision = sum_precision / float(len(joints))
     avg_recall = sum_recall / float(len(joints))
     line = f"\n\nAverage Precision@{thresh}: {avg_precision}\nAverage Recall@{thresh}: {avg_recall}\n"
