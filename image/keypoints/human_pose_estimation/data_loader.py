@@ -70,6 +70,9 @@ class Dataloader:
                     continue
 
                 output = split_line[1:]
+                if len(output)/3 != self.num_outputs():
+                    print(f"Invalid line: {line}")
+                    raise Exception(f"Invalid training data. {len(output)/3} != {self.num_outputs()}")
 
                 fullpath = os.path.join(self.image_dir, filename)
                 if not os.path.exists(fullpath):
