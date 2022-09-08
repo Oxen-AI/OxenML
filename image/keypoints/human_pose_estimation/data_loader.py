@@ -59,6 +59,9 @@ class Dataloader:
         # First gather filenames and keypoints, so we can do a nice progress bar
         with open(filename, "r") as f:
             for line in f:
+                line = line.strip()
+                if "" == line:
+                    continue
                 split_line = line.strip().split("\t")
                 filename = split_line[0]
 
