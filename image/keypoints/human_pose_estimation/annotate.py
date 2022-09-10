@@ -30,6 +30,13 @@ parser.add_argument(
     help="The annotations file we are validating against",
 )
 parser.add_argument(
+    "-n",
+    dest="num_examples",
+    default=-1,
+    type=int,
+    help="The annotations file we are validating against",
+)
+parser.add_argument(
     "-o",
     dest="output",
     required=True,
@@ -56,8 +63,18 @@ img_size = params["image_size"]
 print(f"Loading dataset... {annotations_file}")
 dataset = TSVKeypointsDataset(annotation_file=annotations_file)
 print(f"Running model on {len(dataset.annotations)} files")
+
+n = args.num_examples if args.num_examples > 0 else len(dataset.annotations)
+print(f"Annotating {n} examples out of {len(dataset.annotations)}")
+keys = []
+for (key, _) in dataset.annotations.items():
+    keys.append(key)
+    if len(keys) >= n:
+        break
+
 model_annotations = []
-for (key, annotation) in tqdm(dataset.annotations.items()):
+for i in tqdm(range(n)):
+    annotation = dataset.annotations[keys[i]]
     fullpath = os.path.join(args.data_dir, annotation.file)
     frame = plt.imread(fullpath)
     frame = frame.reshape(1, img_size, img_size, 3)

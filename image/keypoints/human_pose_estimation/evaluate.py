@@ -57,8 +57,8 @@ for joint in joints:
 
 
 for (input_i, file) in enumerate(ground_truth.list_inputs()):
-    gt = ground_truth.get_annotation(file).annotations[0]
-    pred = predictions.get_annotation(file).annotations[0]
+    gt = ground_truth.get_annotations(file).annotations[0]
+    pred = predictions.get_annotations(file).annotations[0]
 
     outcomes = gt.compute_outcomes(pred, confidence_thresh=thresh)
 
