@@ -1,5 +1,5 @@
 import argparse
-from keypoints import OxenHumanKeypointsAnnotation
+from keypoints import OxenHumanKeypointsAnnotation, CocoHumanKeypointsAnnotation
 from keypoints import PredictionOutcome
 from keypoints import TSVKeypointsDataset
 from metrics import Metrics
@@ -46,7 +46,7 @@ ground_truth = TSVKeypointsDataset(annotation_file=ground_truth_file)
 print(f"Loading ground truth... {predictions_file}")
 predictions = TSVKeypointsDataset(annotation_file=predictions_file)
 
-joints = OxenHumanKeypointsAnnotation.joints
+joints = CocoHumanKeypointsAnnotation.joints
 joint_outcomes = {}
 for joint in joints:
     joint_outcomes[joint] = {}

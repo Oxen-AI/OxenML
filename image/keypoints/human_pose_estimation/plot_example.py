@@ -6,6 +6,7 @@ import numpy as np
 from keypoints import TSVKeypointsDataset
 from keypoints import OxenHumanKeypointsAnnotation
 
+
 def main():
     parser = argparse.ArgumentParser(
         description="Command line tool to resize images based on an annotation file"

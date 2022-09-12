@@ -60,7 +60,7 @@ def main():
 
     dataset = MSCocoKeypointsDataset(annotations_file, input_type=args.from_type)
     # dataset = LeedsKeypointsDataset(annotations_file)
-    
+
     dataset.write_output(
         base_img_dir=output_prefix,
         one_person_per_image=one_person_per_image,

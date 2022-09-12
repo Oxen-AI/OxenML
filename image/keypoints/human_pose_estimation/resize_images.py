@@ -33,8 +33,9 @@ def main():
         required=True,
         help="Base path to images that the annotations file references",
     )
+    parser.add_argument("--width", type=int, default=224, help="Width of output images")
     parser.add_argument(
-        "-s", "--size", type=int, default=224, help="Size of output images"
+        "--height", type=int, default=224, help="Height of output images"
     )
     parser.add_argument(
         "-k",
@@ -62,7 +63,7 @@ def main():
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-    aug = iaa.Sequential([iaa.Resize({"height": args.size, "width": args.size})])
+    aug = iaa.Sequential([iaa.Resize({"height": args.height, "width": args.width})])
 
     dataset = TSVKeypointsDataset(annotation_file=annotations_file)
 
@@ -75,7 +76,7 @@ def main():
             exit()
         fullpaths.append(fullpath)
 
-    print(f"Resizing {len(filenames)} images to {args.size}x{args.size}")
+    print(f"Resizing {len(filenames)} images to {args.width}x{args.height}")
     with open(args.output_annotations, "w") as outfile:
         for i in tqdm(range(len(filenames))):
             filename = filenames[i]

@@ -194,8 +194,9 @@ class HumanPoseKeypointAnnotation:
 
         # Sanity check
         if len(self.keypoints) != len(self.joints):
+            print(self.joints)
             raise Exception(
-                f"Could not parse array into keypoints {len(self.keypoints)} != {len(self.joints)}"
+                f"{type(self)} Could not parse array into keypoints {len(self.keypoints)} != {len(self.joints)}"
             )
 
     def parse_heatmap_output(self, outputs):
@@ -245,6 +246,11 @@ class CocoHumanKeypointsAnnotation(HumanPoseKeypointAnnotation):
 
     def __init__(self):
         super().__init__(joints=CocoHumanKeypointsAnnotation.joints)
+
+    def from_tsv(line):
+        annotation = CocoHumanKeypointsAnnotation()
+        annotation.parse_tsv(line)
+        return annotation
 
 
 class AIChallengerKeypointsAnnotation(HumanPoseKeypointAnnotation):
@@ -422,7 +428,10 @@ class TSVKeypointsDataset(PersonKeypointsDataset):
                     file_annotations[filename] = FileAnnotations(file=filename)
 
                 try:
-                    a = OxenHumanKeypointsAnnotation.from_tsv(
+                    # a = OxenHumanKeypointsAnnotation.from_tsv(
+                    #     delimiter.join(split_line[1:])
+                    # )
+                    a = CocoHumanKeypointsAnnotation.from_tsv(
                         delimiter.join(split_line[1:])
                     )
                     file_annotations[filename].annotations.append(a)
@@ -458,28 +467,13 @@ class LeedsKeypointsDataset(PersonKeypointsDataset):
         # 12) Neck -> 1
         # 13) Head top -> 0
 
-        data = scipy.io.loadmat(annotation_file)['joints']
+        data = scipy.io.loadmat(annotation_file)["joints"]
         num_joints = len(data[0])
         num_examples = len(data[0][0])
 
         # Map to same indicies as AIChallenger so we can convert after
-        idx_mapping = [
-            13,
-            11,
-            9,
-            8,
-            10,
-            12,
-            7,
-            5,
-            3,
-            2,
-            4,
-            6,
-            1,
-            0
-        ]
-        
+        idx_mapping = [13, 11, 9, 8, 10, 12, 7, 5, 3, 2, 4, 6, 1, 0]
+
         file_annotations = {}
         for e in range(num_examples):
             kps = []
@@ -514,7 +508,9 @@ class MSCocoKeypointsDataset(PersonKeypointsDataset):
             ai_challenger_kp.parse_array(raw_kps)
             kp = OxenHumanKeypointsAnnotation.from_ai_challenger(ai_challenger_kp)
             return kp
-        raise NotImplementedError(f"Unknkown keypoint type {input_type}")
+        coco_kp = CocoHumanKeypointsAnnotation()
+        coco_kp.parse_array(raw_kps)
+        return coco_kp
 
     def _load_dataset(self, annotation_file, input_type: str):
         if not os.path.exists(annotation_file):
