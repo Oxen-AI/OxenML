@@ -12,7 +12,7 @@ def load_files(directory):
       files.append(src_file)
   return files
 
-def take_first_frame(file, output_dir, label, video_id):
+def take_first_frame(file, relative_out_dir, output_dir, label, video_id):
   filenames = []
   # print(f"Got video file: {f}")
   video = cv2.VideoCapture(file)
@@ -23,19 +23,20 @@ def take_first_frame(file, output_dir, label, video_id):
     success, image = video.read()
     if success:
       output_name = f"{label}_{video_id}_{frame}.jpg"
+      output_filename = os.path.join(relative_out_dir, output_name)
       output_file = os.path.join(output_dir, output_name)
       
       # print(f"Saving image: {output_file}")
 
       # Saves the frames with frame-count
       cv2.imwrite(output_file, image)
-      filenames.append(output_file)
+      filenames.append(output_filename)
       frame += 1
 
       break
   return filenames
 
-def take_all_frames(file, output_dir, label, video_id):
+def take_all_frames(file, relative_out_dir, output_dir, label, video_id):
   filenames = []
   # print(f"Got video file: {f}")
   video = cv2.VideoCapture(file)
@@ -46,18 +47,19 @@ def take_all_frames(file, output_dir, label, video_id):
     success, image = video.read()
     if success:
       output_name = f"{label}_{video_id}_{frame}.jpg"
+      output_filename = os.path.join(relative_out_dir, output_name)
       output_file = os.path.join(output_dir, output_name)
       
       # print(f"Saving image: {output_file}")
 
       # Saves the frames with frame-count
       cv2.imwrite(output_file, image)
-      filenames.append(output_file)
+      filenames.append(output_filename)
       frame += 1
 
   return filenames
 
-def take_first_middle_last_frames(file, output_dir, label, video_id):
+def take_first_middle_last_frames(file, relative_out_dir, output_dir, label, video_id):
   filenames = []
   # print(f"Got video file: {f}")
   video = cv2.VideoCapture(file)
@@ -69,9 +71,10 @@ def take_first_middle_last_frames(file, output_dir, label, video_id):
     success, image = video.read()
     if success:
       output_name = f"{label}_{video_id}_{frame}.jpg"
+      output_filename = os.path.join(relative_out_dir, output_name)
       output_file = os.path.join(output_dir, output_name)
 
-      filenames.append(output_file)
+      filenames.append([output_filename, output_file])
       frames.append(image)
       frame += 1
 
@@ -80,12 +83,13 @@ def take_first_middle_last_frames(file, output_dir, label, video_id):
   indices = [0, halfway, total_frames - 1]
   out_filenames = []
   for i in indices:
-    output_file = filenames[i]
+    output_filename = filenames[i][0]
+    output_file = filenames[i][1]
     image = frames[i]
     cv2.imwrite(output_file, image)
-    out_filenames = [output_file]
+    out_filenames.append(output_filename)
   
-  return output_file
+  return out_filenames
 
 if len(sys.argv) != 3:
   print(f"Usage: {sys.argv[0]} <input_dir> <first,first_mid_last,all>")
@@ -94,11 +98,13 @@ if len(sys.argv) != 3:
 input_dir = sys.argv[1]
 which_frames = sys.argv[2]
 
-video_train_dir = os.path.join(input_dir, "train")
-video_test_dir = os.path.join(input_dir, "test")
+video_train_dir = os.path.join(input_dir, "videos/train")
+video_test_dir = os.path.join(input_dir, "videos/test")
 
-images_dir = os.path.join(input_dir, "images")
-
+relative_images_dir = "images"
+relative_image_train_dir = os.path.join(relative_images_dir, "train")
+relative_image_test_dir = os.path.join(relative_images_dir, "test")
+images_dir = os.path.join(input_dir, relative_images_dir)
 image_train_dir = os.path.join(images_dir, "train")
 image_test_dir = os.path.join(images_dir, "test")
 
@@ -117,9 +123,9 @@ if not os.path.exists(annotations_dir):
 if not os.path.exists(labels_dir):
   os.makedirs(labels_dir)
 
-train_annotations_file = os.path.join(annotations_dir, "train_annotations.txt")
-test_annotations_file = os.path.join(annotations_dir, "test_annotations.txt")
-output_labels_file = os.path.join(labels_dir, "labels.txt")
+train_annotations_file = os.path.join(annotations_dir, "train_annotations.tsv")
+test_annotations_file = os.path.join(annotations_dir, "test_annotations.tsv")
+output_labels_file = os.path.join(labels_dir, "labels.tsv")
 
 train_files = load_files(video_train_dir)
 test_files = load_files(video_test_dir)
@@ -129,12 +135,13 @@ print(f"Got {num_videos} videos")
 
 labels = set()
 video_files = [train_files, test_files]
-output_dirs = [image_train_dir, image_test_dir]
+output_dirs = [[relative_image_train_dir, image_train_dir], [relative_image_test_dir, image_test_dir]]
 filenames = []
 key_counts = {}
 with alive_bar(num_videos, title=f'Processing videos') as bar:
   for (i, files) in enumerate(video_files):
-    output_dir = output_dirs[i]
+    relative_out_dir = output_dirs[i][0]
+    output_dir = output_dirs[i][1]
     filenames.append([])
     for file in files:
       bar()
@@ -146,11 +153,11 @@ with alive_bar(num_videos, title=f'Processing videos') as bar:
       labels.add(label)
 
       if "first" == which_frames:
-        filenames[i].extend(take_first_frame(file, output_dir, label, video_id))
+        filenames[i].extend(take_first_frame(file, relative_out_dir, output_dir, label, video_id))
       elif "first_mid_last" == which_frames:
-        filenames[i].extend(take_first_middle_last_frames(file, output_dir, label, video_id))
+        filenames[i].extend(take_first_middle_last_frames(file, relative_out_dir, output_dir, label, video_id))
       elif "all" == which_frames:
-        filenames[i].extend(take_all_frames(file, output_dir, label, video_id))
+        filenames[i].extend(take_all_frames(file, relative_out_dir, output_dir, label, video_id))
 
 print(f"Saving annotations")
 
@@ -162,7 +169,7 @@ for (i, files) in enumerate(filenames):
       basename = os.path.basename(filename)
       key = basename.split("_")[0]
       line = f"{filename}\t{key}"
-      print(line)
+      # print(line)
       f.write(line)
       f.write("\n")
       # break

@@ -1,3 +1,2 @@
-image/classification/cats_vs_dogs/data
-image/classification/space_jam/data
 __pycache__/
+data/

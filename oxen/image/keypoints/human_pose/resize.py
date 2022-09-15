@@ -8,12 +8,10 @@ from imgaug.augmentables.kps import Keypoint
 
 from matplotlib import pyplot as plt
 
-from keypoints import FileAnnotations
-from keypoints import OxenHumanKeypointsAnnotation
-from keypoints import TSVKeypointsDataset
+from oxen.image.keypoints.human_pose.ms_coco_dataset import FileAnnotations, OxenHumanKeypointsAnnotation, TSVKeypointsDataset
 
 
-def main():
+def resize(raw_args):
 
     parser = argparse.ArgumentParser(
         description="Command line tool to resize images based on an annotation file"
@@ -56,7 +54,7 @@ def main():
         required=True,
         help="The output file for resized annotations",
     )
-    args = parser.parse_args()
+    args = parser.parse_args(raw_args)
 
     annotations_file = args.annotations
     outdir = args.output_images
@@ -120,7 +118,3 @@ def main():
             outfile.write(f"{lines}\n")
 
     print("Done.")
-
-
-if __name__ == "__main__":
-    main()

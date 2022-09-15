@@ -4,7 +4,6 @@ import cv2
 import json
 from alive_progress import alive_bar
 
-
 if len(sys.argv) != 3:
   print(f"Usage: {sys.argv[0]} <data-dir> <output-dir>")
   exit()

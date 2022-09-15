@@ -3,11 +3,10 @@ import argparse
 import os
 import numpy as np
 
-from keypoints import TSVKeypointsDataset
-from keypoints import OxenHumanKeypointsAnnotation
+from oxen.image.keypoints.human_pose.ms_coco_dataset import TSVKeypointsDataset
 
 
-def main():
+def plot(raw_args):
     parser = argparse.ArgumentParser(
         description="Command line tool to resize images based on an annotation file"
     )
@@ -30,7 +29,7 @@ def main():
         help="Line number of the image you want to plot",
     )
 
-    args = parser.parse_args()
+    args = parser.parse_args(raw_args)
 
     base_dir = args.data
     annotations_file = args.annotations
@@ -53,9 +52,6 @@ def main():
     filename = filenames[line_num]
     print(f"Displaying file: {filename}")
     annotation = dataset.get_annotations(filename).annotations[0]
-    fullpath = os.path.join(args.data, filename)
+    fullpath = os.path.join(base_dir, filename)
     annotation.plot_image_file(fullpath)
 
-
-if __name__ == "__main__":
-    main()

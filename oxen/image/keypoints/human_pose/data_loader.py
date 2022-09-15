@@ -1,17 +1,15 @@
 import os
-from signal import valid_signals
 from tqdm import tqdm
 from PIL import Image
 import numpy as np
-from skimage.transform import resize
 from imgaug.augmentables.kps import KeypointsOnImage
 from imgaug.augmentables.kps import Keypoint
 from matplotlib import pyplot as plt
 import random
 import logging
 import math
-from util import visualize_keypoints
 
+from oxen.image.keypoints.human_pose.ms_coco_dataset import TSVKeypointsDataset
 
 class Dataloader:
     def __init__(
@@ -54,44 +52,24 @@ class Dataloader:
             return False
 
         logging.info(f"Reading annotation file: {filename}")
-        filenames = []
+        paths = []
         keypoints = []
         # First gather filenames and keypoints, so we can do a nice progress bar
-        with open(filename, "r") as f:
-            for line in f:
-                line = line.strip()
-                if "" == line:
-                    continue
-                split_line = line.strip().split("\t")
-                filename = split_line[0]
-
-                # skip top row in tsv
-                if filename == "filename":
-                    continue
-
-                output = split_line[1:]
-                if len(output) / 3 != self.num_outputs():
-                    print(f"Invalid line: {line}")
-                    raise Exception(
-                        f"Invalid training data. {len(output)/3} != {self.num_outputs()}"
-                    )
-
-                fullpath = os.path.join(self.image_dir, filename)
-                if not os.path.exists(fullpath):
-                    logging.error(f"Could not find file {fullpath}")
-                    return False
-
-                filenames.append(fullpath)
-                keypoints.append(output)
-
-                if total > 0 and len(filenames) > total:
-                    break
+        dataset = TSVKeypointsDataset(annotation_file=filename)
+        for filename in dataset.list_inputs():
+            path = os.path.join(self.image_dir, filename)
+            if not os.path.exists():
+                raise Exception(f"Training image not found: {path}")
+            
+            for annotation in dataset.get_annotations(filename):
+                paths.append(path)
+                keypoints.append(annotation.keypoints)
 
         # Then load the data in correct format, either into memory or just file pointers
-        logging.info(f"Loading {len(filenames)} annotations")
-        for i in tqdm(range(len(filenames))):
-            filename = filenames[i]
-            label_idx = np.array(keypoints[i])
+        logging.info(f"Loading {len(paths)} annotations")
+        for i in tqdm(range(len(paths))):
+            filename = paths[i]
+            outputs = np.array(keypoints[i])
 
             if self.should_load_into_memory:
                 frame = self.read_image_from_disk(filename)
@@ -99,7 +77,7 @@ class Dataloader:
             else:
                 self.inputs.append(filename)
 
-            self.outputs.append(label_idx)
+            self.outputs.append(outputs)
 
         logging.info(f"Done loading {len(self.inputs)}")
         if shuffle:
@@ -127,9 +105,8 @@ class Dataloader:
             axes[i, 2].imshow(output_heatmap, interpolation="nearest")
 
         plt.savefig(filename)
-        # plt.show()
 
-    def get_batch(self, size, show_images=False):
+    def get_batch(self, size):
         input_batch = np.zeros(
             (size, self.image_shape[0], self.image_shape[1], self.image_shape[2]),
             dtype="uint8",
@@ -138,39 +115,23 @@ class Dataloader:
             (size, self.image_shape[0], self.image_shape[1], self.n_keypoints),
             dtype="float32",
         )
-
-        debug_images = []
-        debug_kps = []
-
         for batch_i in range(size):
             index = self._random_indices[self._example_idx]
 
             # Read the current image not resized
             frame = self.current_image(index)
 
-            # line is formatted with x,y,visible for each joint, so need to skip by 3s
-            line = self.outputs[index]
-
             kps = []
             visible = []
-            step = 3
             # To apply our data augmentation pipeline, we first need to
             # form Keypoint objects with the original coordinates.
-            for i in range(0, self.n_keypoints * step, step):
-                kps.append(Keypoint(x=float(line[i]), y=float(line[i + 1])))
-                visible.append(line[i + 2] == "2" or line[i + 2] == "True")
+            for k in self.outputs[index]:
+                kps.append(Keypoint(x=k.x, y=k.y))
+                visible.append(k.confidence > 0.5)
 
-            # TODO use dataloader from OxenDatasets
             # We then project the original image and its keypoint coordinates.
             kps_obj = KeypointsOnImage(kps, shape=frame.shape)
-            (new_image, new_kps_obj) = (
-                frame,
-                kps_obj,
-            )  # self.aug(image=frame, keypoints=kps_obj)
-
-            if show_images:
-                debug_images.append(new_image)
-                debug_kps.append(new_kps_obj)
+            (new_image, new_kps_obj) = self.aug(image=frame, keypoints=kps_obj)
 
             # logging.info(f"Frame [{index}] shape {frame.shape}")
             # logging.info(f"Image [{index}] shape {new_image.shape}")
@@ -178,41 +139,7 @@ class Dataloader:
             input_batch[batch_i] = new_image
 
             # Parse the coordinates from the new keypoint object.
-            width = self.image_shape[0]
-            height = self.image_shape[1]
-            sigma = 6.0
-            output = np.zeros((width, height, self.n_keypoints), dtype=np.float32)
-            for i, keypoint in enumerate(new_kps_obj):
-                if not visible[i]:
-                    continue
-
-                center_x = int(keypoint.x)
-                center_y = int(keypoint.y)
-                # print(f"center is {center_x},{center_y}")
-
-                if center_x < output.shape[0] and center_y < output.shape[1]:
-                    output[center_x][center_y][i] = 1
-
-                th = 1.6052
-                delta = math.sqrt(th * 2)
-
-                x0 = int(max(0, center_x - delta * sigma))
-                y0 = int(max(0, center_y - delta * sigma))
-
-                x1 = int(min(width, center_x + delta * sigma))
-                y1 = int(min(height, center_y + delta * sigma))
-
-                # gaussian filter
-                for y in range(y0, y1):
-                    for x in range(x0, x1):
-                        d = (x - center_x) ** 2 + (y - center_y) ** 2
-                        exp = d / 2.0 / sigma / sigma
-                        if exp > th:
-                            continue
-
-                        if x < output.shape[0] and y < output.shape[1]:
-                            output[y][x][i] = max(output[y][x][i], math.exp(-exp))
-                            output[y][x][i] = min(output[y][x][i], 1.0)
+            output = self._generate_output_heatmap(new_kps_obj, visible)
 
             # Reshape to be (1, 1, n_keypoints * 2) for x,y
             output_batch[
@@ -221,10 +148,49 @@ class Dataloader:
 
             self._example_idx += 1
 
-        if len(debug_images) > 0:
-            visualize_keypoints(debug_images, debug_kps)
-
         return (input_batch, output_batch)
+    
+    def _generate_output_heatmap(
+        self,
+        kps_obj,
+        visible: list[bool]
+    ):
+        width = self.image_shape[0]
+        height = self.image_shape[1]
+        sigma = 6.0
+        output = np.zeros((width, height, self.n_keypoints), dtype=np.float32)
+        for i, keypoint in enumerate(kps_obj):
+            if not visible[i]:
+                continue
+
+            center_x = int(keypoint.x)
+            center_y = int(keypoint.y)
+            # print(f"center is {center_x},{center_y}")
+
+            if center_x < output.shape[0] and center_y < output.shape[1]:
+                output[center_x][center_y][i] = 1
+
+            th = 1.6052
+            delta = math.sqrt(th * 2)
+
+            x0 = int(max(0, center_x - delta * sigma))
+            y0 = int(max(0, center_y - delta * sigma))
+
+            x1 = int(min(width, center_x + delta * sigma))
+            y1 = int(min(height, center_y + delta * sigma))
+
+            # gaussian filter
+            for y in range(y0, y1):
+                for x in range(x0, x1):
+                    d = (x - center_x) ** 2 + (y - center_y) ** 2
+                    exp = d / 2.0 / sigma / sigma
+                    if exp > th:
+                        continue
+
+                    if x < output.shape[0] and y < output.shape[1]:
+                        output[y][x][i] = max(output[y][x][i], math.exp(-exp))
+                        output[y][x][i] = min(output[y][x][i], 1.0)
+        return output
 
     def current_image(self, index):
         if self.should_load_into_memory:
