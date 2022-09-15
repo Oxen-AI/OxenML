@@ -8,7 +8,22 @@ class ImageKeypoint:
         self.confidence = confidence
 
     def __repr__(self):
-        return f"<OxenImageKeypoint x: {self.x}, y: {self.y} confidence: {self.confidence}>"
+        return f"<ImageKeypoint x: {self.x}, y: {self.y} confidence: {self.confidence}>"
+
+    @classmethod
+    def average(cls, keypoints: list):
+        if len(keypoints) == 0:
+            # Don't divide by zero
+            return cls(x=0, y=0, confidence=0)
+        x = 0.0
+        y = 0.0
+        c = 0.0
+        for kp in keypoints:
+            x += kp.x
+            y += kp.y
+            c += kp.confidence
+        total = float(len(keypoints))
+        return cls(x=x/total, y=y/total, confidence=c/total)
 
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)

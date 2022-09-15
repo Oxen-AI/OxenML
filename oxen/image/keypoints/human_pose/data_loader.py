@@ -9,7 +9,7 @@ import random
 import logging
 import math
 
-from oxen.image.keypoints.human_pose.ms_coco_dataset import TSVKeypointsDataset
+from oxen.image.keypoints.human_pose.coco_dataset import TSVKeypointsDataset
 
 class Dataloader:
     def __init__(

@@ -1,5 +1,9 @@
 
+from oxen.annotations.annotation import Annotation
+from oxen.image.keypoints.human_pose import CocoHumanKeypointsAnnotation
+from oxen.image.keypoints.human_pose import AIChallengerHumanKeypointsAnnotation
 from . import HumanPoseKeypointAnnotation
+from . import Joint
 from oxen.image.keypoints.image_keypoint import ImageKeypoint
 
 class OxenHumanKeypointsAnnotation(HumanPoseKeypointAnnotation):
@@ -8,19 +12,19 @@ class OxenHumanKeypointsAnnotation(HumanPoseKeypointAnnotation):
     """
 
     joints = [
-        "head",
-        "left_shoulder",
-        "right_shoulder",
-        "left_elbow",
-        "right_elbow",
-        "left_wrist",
-        "right_wrist",
-        "left_hip",
-        "right_hip",
-        "left_knee",
-        "right_knee",
-        "left_ankle",
-        "right_ankle",
+        Joint.HEAD,
+        Joint.LEFT_SHOULDER,
+        Joint.RIGHT_SHOULDER,
+        Joint.LEFT_ELBOW,
+        Joint.RIGHT_ELBOW,
+        Joint.LEFT_WRIST,
+        Joint.RIGHT_WRIST,
+        Joint.LEFT_HIP,
+        Joint.RIGHT_HIP,
+        Joint.LEFT_KNEE,
+        Joint.RIGHT_KNEE,
+        Joint.LEFT_ANKLE,
+        Joint.RIGHT_ANKLE
     ]
 
     def __init__(self):
@@ -41,6 +45,13 @@ class OxenHumanKeypointsAnnotation(HumanPoseKeypointAnnotation):
         annotation.parse_keypoints(kps)
         return annotation
 
+    def from_annotation(ann: HumanPoseKeypointAnnotation):
+        if isinstance(ann, CocoHumanKeypointsAnnotation):
+            return OxenHumanKeypointsAnnotation.from_coco(ann)
+        if isinstance(ann, AIChallengerHumanKeypointsAnnotation):
+            return OxenHumanKeypointsAnnotation.from_ai_challenger(ann)
+        raise NotImplementedError(f"Cannot convert unknown type {type(ann)}")
+
     def from_coco(coco_kps):
         # first five joints (nose, left_eye, left_ear, right_eye, right_ear) in mscoco collapse down to head
         return OxenHumanKeypointsAnnotation._collapse_top_n(coco_kps, 5)
@@ -49,13 +60,13 @@ class OxenHumanKeypointsAnnotation(HumanPoseKeypointAnnotation):
         # first 2 joints in mscoco (head, neck) collapse down to head
         return OxenHumanKeypointsAnnotation._collapse_top_n(coco_kps, 2)
 
-    def _collapse_top_n(coco_kps, n: int):
+    def _collapse_top_n(ann: HumanPoseKeypointAnnotation, n: int):
         is_visible = False
         sum_x = 0.0
         sum_y = 0.0
         total = 0.0
         for i in range(n):
-            kp = coco_kps.keypoints[i]
+            kp = ann.keypoints[i]
             sum_x += kp.x
             sum_y += kp.y
             if kp.confidence > 0.5:
@@ -69,7 +80,7 @@ class OxenHumanKeypointsAnnotation(HumanPoseKeypointAnnotation):
         oxen_kps.keypoints.append(
             ImageKeypoint(x=avg_x, y=avg_y, confidence=confidence)
         )
-        for kp in coco_kps.keypoints[n:]:
+        for kp in ann.keypoints[n:]:
             oxen_kps.keypoints.append(kp)
 
         assert len(oxen_kps.keypoints) == len(OxenHumanKeypointsAnnotation.joints)

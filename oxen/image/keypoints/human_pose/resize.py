@@ -8,7 +8,7 @@ from imgaug.augmentables.kps import Keypoint
 
 from matplotlib import pyplot as plt
 
-from oxen.image.keypoints.human_pose.ms_coco_dataset import FileAnnotations, OxenHumanKeypointsAnnotation, TSVKeypointsDataset
+from oxen.image.keypoints.human_pose import FileAnnotations, OxenHumanKeypointsAnnotation, TSVKeypointsDataset
 
 
 def resize(raw_args):

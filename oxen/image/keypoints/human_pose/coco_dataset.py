@@ -1,34 +1,17 @@
 import os
 import json
 
-from oxen.image.keypoints.human_pose import AIChallengerKeypointsAnnotation
 from oxen.image.keypoints.human_pose import CocoHumanKeypointsAnnotation
-from oxen.image.keypoints.human_pose import OxenHumanKeypointsAnnotation
 from oxen.annotations.annotations_dataset import AnnotationsDataset
 from oxen.annotations.file_annotations import FileAnnotations
 
 
-class MSCocoKeypointsDataset(AnnotationsDataset):
-    def __init__(self, annotation_file: str, input_type: str = "mscoco"):
+class CocoHumanKeypointsDataset(AnnotationsDataset):
+    def __init__(self, annotation_file: str):
         super().__init__()
-        self.annotations = self._load_dataset(annotation_file, input_type)
+        self.annotations = self._load_dataset(annotation_file)
 
-    def _parse_raw_keypoints(self, raw_kps, input_type: str):
-        if "mscoco" == input_type:
-            coco_kp = CocoHumanKeypointsAnnotation()
-            coco_kp.parse_array(raw_kps)
-            kp = OxenHumanKeypointsAnnotation.from_coco(coco_kp)
-            return kp
-        elif "ai_challenger" == input_type:
-            ai_challenger_kp = AIChallengerKeypointsAnnotation()
-            ai_challenger_kp.parse_array(raw_kps)
-            kp = OxenHumanKeypointsAnnotation.from_ai_challenger(ai_challenger_kp)
-            return kp
-        coco_kp = CocoHumanKeypointsAnnotation()
-        coco_kp.parse_array(raw_kps)
-        return coco_kp
-
-    def _load_dataset(self, annotation_file, input_type: str):
+    def _load_dataset(self, annotation_file):
         if not os.path.exists(annotation_file):
             raise ValueError("Annotation file not found")
 
@@ -54,7 +37,8 @@ class MSCocoKeypointsDataset(AnnotationsDataset):
                 id = str(item["image_id"])
                 raw_kps = item["keypoints"]
 
-                kp = self._parse_raw_keypoints(raw_kps, input_type)
+                kp = CocoHumanKeypointsAnnotation()
+                kp.parse_array(raw_kps)
 
                 if kp.is_all_zeros():
                     continue

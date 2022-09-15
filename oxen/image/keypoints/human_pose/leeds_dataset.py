@@ -1,10 +1,9 @@
 
 import scipy.io
 
-from oxen.image.keypoints.human_pose import AIChallengerKeypointsAnnotation
 from oxen.annotations.annotations_dataset import AnnotationsDataset
 from oxen.annotations.file_annotations import FileAnnotations
-from oxen.image.keypoints.human_pose import OxenHumanKeypointsAnnotation
+from oxen.image.keypoints.human_pose import LeedsHumanKeypointsAnnotation
 
 
 class LeedsKeypointsDataset(AnnotationsDataset):
@@ -36,21 +35,26 @@ class LeedsKeypointsDataset(AnnotationsDataset):
         num_examples = len(data[0][0])
 
         # Map to same indicies as AIChallenger so we can convert after
-        idx_mapping = [13, 11, 9, 8, 10, 12, 7, 5, 3, 2, 4, 6, 1, 0]
+        # idx_mapping = [13, 11, 9, 8, 10, 12, 7, 5, 3, 2, 4, 6, 1, 0]
 
         file_annotations = {}
         for e in range(num_examples):
             kps = []
             for j in range(num_joints):
-                i = idx_mapping[j]
-                kps.append(data[0][i][e])
-                kps.append(data[1][i][e])
+                # i = idx_mapping[j]
+                kps.append(data[0][j][e])
+                kps.append(data[1][j][e])
                 kps.append(1.0 if data[2][j][e] == 0.0 else 0.0)
             filename = f"im{str(e+1).zfill(4)}.jpg"
             file_annotation = FileAnnotations(file=filename)
-            ai_challenge_kps = AIChallengerKeypointsAnnotation()
-            ai_challenge_kps.parse_array(kps)
-            oxen_kps = OxenHumanKeypointsAnnotation.from_ai_challenger(ai_challenge_kps)
-            file_annotation.add_annotation(oxen_kps)
+            ann = LeedsHumanKeypointsAnnotation()
+            ann.parse_array(kps)
+            file_annotation.add_annotation(ann)
+            
+            # ai_challenge_kps = AIChallengerKeypointsAnnotation()
+            # ai_challenge_kps.parse_array(kps)
+            # oxen_kps = OxenHumanKeypointsAnnotation.from_ai_challenger(ai_challenge_kps)
+            # file_annotation.add_annotation(oxen_kps)
+
             file_annotations[filename] = file_annotation
         return file_annotations

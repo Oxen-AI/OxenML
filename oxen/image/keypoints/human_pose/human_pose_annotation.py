@@ -107,8 +107,8 @@ class HumanPoseKeypointAnnotation:
         n_keypoints = int(len(data) / step)
         # Since the last entry is the visibility flag, we discard it.
         for i in range(0, n_keypoints * step, step):
-            x = float(data[i])
-            y = float(data[i + 1])
+            x = int(data[i])
+            y = int(data[i + 1])
             is_vis_row = data[i + 2]
             confidence = (
                 1.0 if is_vis_row == 2.0 or is_vis_row == "True" else float(is_vis_row)

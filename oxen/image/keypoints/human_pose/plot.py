@@ -3,7 +3,7 @@ import argparse
 import os
 import numpy as np
 
-from oxen.image.keypoints.human_pose.ms_coco_dataset import TSVKeypointsDataset
+from oxen.image.keypoints.human_pose.coco_dataset import TSVKeypointsDataset
 
 
 def plot(raw_args):

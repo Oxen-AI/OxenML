@@ -6,7 +6,7 @@ from tensorflow import keras
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 
-from oxen.image.keypoints.human_pose.ms_coco_dataset import TSVKeypointsDataset, OxenHumanKeypointsAnnotation, FileAnnotations
+from oxen.image.keypoints.human_pose.coco_dataset import TSVKeypointsDataset, OxenHumanKeypointsAnnotation, FileAnnotations
 
 def annotate(raw_args):
     parser = argparse.ArgumentParser(description='Detect keypoints on the command line.')
