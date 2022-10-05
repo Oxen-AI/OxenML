@@ -14,6 +14,9 @@ class FileAnnotations:
     def __len__(self) -> int:
         return len(self.annotations)
 
+    def __getitem__(self, i: int):
+        return self.annotations[i]
+
     def add_annotation(self, annotation):
         self.annotations.append(annotation)
 
@@ -22,6 +25,9 @@ class FileAnnotations:
 
     def to_tsv(self):
         return "\n".join([f"{self.file}\t{a.to_tsv()}" for a in self.annotations])
+    
+    def to_csv(self):
+        return "\n".join([f"{self.file},{a.to_csv()}" for a in self.annotations])
 
     def to_json(self):
         return jsonpickle.encode(

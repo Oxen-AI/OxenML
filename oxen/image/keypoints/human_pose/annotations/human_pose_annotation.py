@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 from typing import Optional
 import numpy as np
 
-from oxen.image.bounding_box import BoundingBox
+from oxen.image.bounding_box.annotations import OxenBoundingBox
 from oxen.image.keypoints.image_keypoint import ImageKeypoint
 from oxen.metrics.outcome import PredictionOutcome
 

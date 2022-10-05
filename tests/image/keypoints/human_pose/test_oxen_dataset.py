@@ -1,6 +1,7 @@
 
-import sys
+import sys, os
 import pathlib
+import uuid
 
 # Need to add the oxen dir to test paths
 oxen_dir = pathlib.Path(__file__).parent.parent.parent.parent.parent.resolve()
@@ -12,7 +13,7 @@ from oxen.image.keypoints.human_pose import CocoHumanKeypointsDataset, OxenHuman
 
 def test_convert_coco():
     coco_dataset = CocoHumanKeypointsDataset(
-        annotation_file="tests/data/coco_small.json"
+        annotation_file="tests/data/coco_person_keypoints_small.json"
     )
     
     dataset = OxenHumanKeypointsDataset.from_dataset(coco_dataset)
@@ -30,13 +31,7 @@ def test_convert_coco():
     assert keypoint.x == 269
     assert keypoint.y == 144
     assert keypoint.confidence == 1.0
-    
-    # "nose",
-    # "left_eye",
-    # "right_eye",
-    # "left_ear",
-    # "right_ear",
-    
+
     face_keypoints = [
         coco_dataset.get_annotations(file).annotations[0].get_joint_keypoint(Joint.NOSE),
         coco_dataset.get_annotations(file).annotations[0].get_joint_keypoint(Joint.LEFT_EYE),
@@ -51,4 +46,16 @@ def test_convert_coco():
     assert keypoint.x == face_avg.x
     assert keypoint.y == face_avg.y
     assert keypoint.confidence == 1.0
+
+def test_write_converted_dataset():
+    coco_dataset = CocoHumanKeypointsDataset(
+        annotation_file="tests/data/coco_person_keypoints_small.json"
+    )
     
+    filename = f"tests/data/{uuid.uuid4().hex}.ndjson"
+    
+    dataset = OxenHumanKeypointsDataset.from_dataset(coco_dataset)
+    dataset.write_output("tests/data/", filename)
+    
+    # cleanup
+    os.remove(filename)

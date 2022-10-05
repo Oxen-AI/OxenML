@@ -1,7 +1,7 @@
 
 
-from . import HumanPoseKeypointAnnotation
-from . import Joint
+from .. import HumanPoseKeypointAnnotation
+from .. import Joint
 
 class LeedsHumanKeypointsAnnotation(HumanPoseKeypointAnnotation):
     """

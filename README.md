@@ -2,6 +2,20 @@
 
 Tools and scripts to enable demos on OxenData
 
+# Running Tool
+
+`python runner.py bbox_convert`
+
+# Running tests
+
+To run an individual test file
+
+`pytest -s tests/image/bbox/test_coco_dataset.py`
+
+To run full test suite (will pickup all files prefixed with test_)
+
+`pytest -s tests/`
+
 
 ## Datasets
 

@@ -2,8 +2,8 @@
 from oxen.annotations.annotation import Annotation
 from oxen.image.keypoints.human_pose import CocoHumanKeypointsAnnotation
 from oxen.image.keypoints.human_pose import AIChallengerHumanKeypointsAnnotation
-from . import HumanPoseKeypointAnnotation
-from . import Joint
+from .. import HumanPoseKeypointAnnotation
+from .. import Joint
 from oxen.image.keypoints.image_keypoint import ImageKeypoint
 
 class OxenHumanKeypointsAnnotation(HumanPoseKeypointAnnotation):

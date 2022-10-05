@@ -12,17 +12,17 @@ def test_load_leeds():
     dataset = LeedsKeypointsDataset(
         annotation_file="tests/data/leeds_joints.mat"
     )
-    assert dataset.num_inputs() == 2000
+    assert(dataset.num_inputs() == 2000)
     
     file = "im0001.jpg"
     file_annotations = dataset.get_annotations(file)
-    assert len(file_annotations) == 1
+    assert(len(file_annotations) == 1)
     
     annotation = file_annotations.annotations[0]
 
-    assert len(annotation.joints) == 14
+    assert(len(annotation.joints) == 14)
 
     keypoint = annotation.get_joint_keypoint(Joint.LEFT_SHOULDER)
-    assert keypoint.x == 513
-    assert keypoint.y == 365
-    assert keypoint.confidence == 1.0
+    assert(keypoint.x == 513)
+    assert(keypoint.y == 365)
+    assert(keypoint.confidence == 1.0)

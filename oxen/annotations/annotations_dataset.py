@@ -1,6 +1,8 @@
+from argparse import FileType
 import os
 
 from . import Annotation
+from . import FileFormat
 
 class AnnotationsDataset:
     def __init__(self):
@@ -25,23 +27,26 @@ class AnnotationsDataset:
         return self.annotations[key]
 
     def write_tsv(self, base_img_dir, outfile):
-        self.write_output(base_img_dir, outfile, output_type="tsv")
+        self.write_output(base_img_dir, outfile, output_type=FileFormat.TSV)
 
-    def write_tsv(self, base_img_dir: str, outfile: str):
-        self.write_output(base_img_dir, outfile, output_type="json")
+    def write_csv(self, base_img_dir, outfile):
+        self.write_output(base_img_dir, outfile, output_type=FileFormat.CSV)
+
+    def write_ndjson(self, base_img_dir: str, outfile: str):
+        self.write_output(base_img_dir, outfile, output_type=FileFormat.ND_JSON)
 
     def write_output(
-        self, base_img_dir, outfile, one_example_per_file=False, output_type="tsv"
+        self,
+        base_img_dir:str,
+        outfile:str,
+        one_example_per_file:bool=False,
+        output_type:FileFormat=FileFormat.CSV
     ):
         print(f"Writing annotations to {outfile}")
         num_outputted = 0
         with open(outfile, "w") as f:
             for id in self.annotations.keys():
                 file_annotations = self.annotations[id]
-                # print(f"{file_annotations.file} has {len(file_annotations.annotations)} annotations")
-                if len(file_annotations.annotations) == 0:
-                    # we filtered before it got to here
-                    continue
 
                 if one_example_per_file and len(file_annotations.annotations) != 1:
                     continue
@@ -50,9 +55,15 @@ class AnnotationsDataset:
                 file = os.path.join(base_img_dir, file_annotations.file)
                 file_annotations.file = file
 
-                if "tsv" == output_type:
+                if FileFormat.TSV == output_type:
+                    if num_outputted == 0:
+                        f.write(f"{file_annotations[0].tsv_header()}\n")
                     f.write(f"{file_annotations.to_tsv()}\n")
-                elif "json" == output_type:
+                elif FileFormat.CSV == output_type:
+                    if num_outputted == 0:
+                        f.write(f"{file_annotations[0].csv_header()}\n")
+                    f.write(f"{file_annotations.to_csv()}\n")
+                elif FileFormat.ND_JSON == output_type:
                     f.write(f"{file_annotations.to_json()}\n")
                 else:
                     raise ValueError(f"Unknown argument: {output_type}")

@@ -4,11 +4,11 @@
 
 from .skeleton import Joint
 
-from .human_pose_annotation import HumanPoseKeypointAnnotation
-from .coco_annotation import CocoHumanKeypointsAnnotation
-from .ai_challenger_annotation import AIChallengerHumanKeypointsAnnotation
-from .oxen_annotation import OxenHumanKeypointsAnnotation
-from .leeds_annotation import LeedsHumanKeypointsAnnotation
+from .annotations.human_pose_annotation import HumanPoseKeypointAnnotation
+from .annotations.coco_annotation import CocoHumanKeypointsAnnotation
+from .annotations.ai_challenger_annotation import AIChallengerHumanKeypointsAnnotation
+from .annotations.oxen_annotation import OxenHumanKeypointsAnnotation
+from .annotations.leeds_annotation import LeedsHumanKeypointsAnnotation
 
 from .leeds_dataset import LeedsKeypointsDataset
 from .coco_dataset import CocoHumanKeypointsDataset
