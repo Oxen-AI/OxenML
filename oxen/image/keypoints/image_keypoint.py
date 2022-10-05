@@ -1,5 +1,5 @@
-
 import json
+
 
 class ImageKeypoint:
     def __init__(self, x, y, confidence=0.0):
@@ -9,6 +9,12 @@ class ImageKeypoint:
 
     def __repr__(self):
         return f"<ImageKeypoint x: {self.x}, y: {self.y} confidence: {self.confidence}>"
+
+    def to_tsv(self):
+        return f"{self.x}\t{self.y}\t{self.confidence}"
+
+    def to_csv(self):
+        return f"{self.x},{self.y},{self.confidence}"
 
     @classmethod
     def average(cls, keypoints: list):
@@ -23,7 +29,7 @@ class ImageKeypoint:
             y += kp.y
             c += kp.confidence
         total = float(len(keypoints))
-        return cls(x=x/total, y=y/total, confidence=c/total)
+        return cls(x=x / total, y=y / total, confidence=c / total)
 
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)

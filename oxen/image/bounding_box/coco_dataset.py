@@ -37,12 +37,18 @@ class CocoBoundingBoxDataset(AnnotationsDataset):
             category_num = int(item["category_id"])
             if not category_num in categories:
                 raise Exception(f"Unknown category id {category_num}")
-            
+
             label_name = categories[category_num]
             image_id = str(item["image_id"])
-            
+
             raw_bbox = item["bbox"]
-            bb = OxenBoundingBox(min_x=raw_bbox[0], min_y=raw_bbox[1], width=raw_bbox[2], height=raw_bbox[3], label=label_name)
+            bb = OxenBoundingBox(
+                min_x=raw_bbox[0],
+                min_y=raw_bbox[1],
+                width=raw_bbox[2],
+                height=raw_bbox[3],
+                label=label_name,
+            )
 
             file_annotations[image_id].add_annotation(bb)
 

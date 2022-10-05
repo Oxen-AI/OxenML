@@ -1,4 +1,3 @@
-
 import scipy.io
 
 from oxen.annotations.annotations_dataset import AnnotationsDataset
@@ -50,7 +49,7 @@ class LeedsKeypointsDataset(AnnotationsDataset):
             ann = LeedsHumanKeypointsAnnotation()
             ann.parse_array(kps)
             file_annotation.add_annotation(ann)
-            
+
             # ai_challenge_kps = AIChallengerKeypointsAnnotation()
             # ai_challenge_kps.parse_array(kps)
             # oxen_kps = OxenHumanKeypointsAnnotation.from_ai_challenger(ai_challenge_kps)

@@ -66,7 +66,11 @@ for i in range(10):
     thresh = i * 0.1
     thresh_vals.append(thresh)
 
-    joints = OxenHumanKeypointsAnnotation.joints if 'oxen' == args.type else CocoHumanKeypointsAnnotation.joints
+    joints = (
+        OxenHumanKeypointsAnnotation.joints
+        if "oxen" == args.type
+        else CocoHumanKeypointsAnnotation.joints
+    )
     joint_outcomes = {}
     for joint in joints:
         joint_outcomes[joint] = {}
@@ -74,7 +78,6 @@ for i in range(10):
         joint_outcomes[joint][PredictionOutcome.FALSE_POSITIVE] = 0.0
         joint_outcomes[joint][PredictionOutcome.FALSE_NEGATIVE] = 0.0
         joint_outcomes[joint][PredictionOutcome.TRUE_NEGATIVE] = 0.0
-
 
     for (input_i, file) in enumerate(ground_truth.list_inputs()):
         gt = ground_truth.get_annotations(file).annotations[0]
@@ -88,7 +91,7 @@ for i in range(10):
 
     output_file = os.path.join(output_dir, f"results_{thresh}.txt")
     print(f"Writing output to {output_file}")
-    
+
     with open(output_file, "w") as f:
         sum_precision = 0.0
         sum_recall = 0.0
@@ -100,9 +103,7 @@ for i in range(10):
             sum_precision += precision
             sum_recall += recall
 
-            line = (
-                f"{joint}\n  Precision@{thresh}: {precision}\n  Recall@{thresh}: {recall}\n"
-            )
+            line = f"{joint}\n  Precision@{thresh}: {precision}\n  Recall@{thresh}: {recall}\n"
             print(line)
             f.write(line)
 
@@ -111,24 +112,23 @@ for i in range(10):
         line = f"\n\nAverage Precision@{thresh}: {avg_precision}\nAverage Recall@{thresh}: {avg_recall}\n"
         print(line)
         f.write(line)
-        
+
         precision_vals.append(avg_precision)
         recall_vals.append(avg_recall)
 
 
-# plotting the points 
+# plotting the points
 plt.plot(thresh_vals, precision_vals, label="Precision")
 plt.plot(thresh_vals, recall_vals, label="Recall")
-  
+
 # naming the x axis
-plt.xlabel('Threshold')
+plt.xlabel("Threshold")
 # naming the y axis
-plt.ylabel('Values')
+plt.ylabel("Values")
 plt.ylim([0, 1.0])
 
-plt.title(f'Precision vs Recall\n{args.name}')
+plt.title(f"Precision vs Recall\n{args.name}")
 
 precision_plot_file = os.path.join(output_dir, f"precision.png")
 print(f"Saving {precision_plot_file}")
 plt.savefig(precision_plot_file)
-

@@ -1,7 +1,7 @@
-
 import jsonpickle
 
 from oxen.annotations.annotation import Annotation
+
 
 class FileAnnotations:
     def __init__(self, file):
@@ -25,7 +25,7 @@ class FileAnnotations:
 
     def to_tsv(self):
         return "\n".join([f"{self.file}\t{a.to_tsv()}" for a in self.annotations])
-    
+
     def to_csv(self):
         return "\n".join([f"{self.file},{a.to_csv()}" for a in self.annotations])
 

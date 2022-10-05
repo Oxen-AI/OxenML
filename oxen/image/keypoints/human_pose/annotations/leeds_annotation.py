@@ -1,12 +1,11 @@
-
-
 from .. import HumanPoseKeypointAnnotation
 from .. import Joint
+
 
 class LeedsHumanKeypointsAnnotation(HumanPoseKeypointAnnotation):
     """
     14 keypoints from the Leeds Sports Dataset
-    
+
     http://sam.johnson.io/research/lsp.html
     """
 
@@ -24,7 +23,7 @@ class LeedsHumanKeypointsAnnotation(HumanPoseKeypointAnnotation):
         Joint.LEFT_ELBOW,
         Joint.LEFT_WRIST,
         Joint.NECK,
-        Joint.TOP_HEAD
+        Joint.TOP_HEAD,
     ]
 
     def __init__(self):

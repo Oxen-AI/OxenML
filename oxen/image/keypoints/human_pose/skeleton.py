@@ -1,6 +1,5 @@
-
-
 from enum import Enum
+
 
 class Joint(Enum):
     TOP_HEAD = "top_head"
@@ -23,4 +22,3 @@ class Joint(Enum):
     RIGHT_KNEE = "right_knee"
     LEFT_ANKLE = "left_ankle"
     RIGHT_ANKLE = "right_ankle"
-

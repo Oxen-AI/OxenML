@@ -1,4 +1,3 @@
-
 import sys, os
 from tensorflow import keras
 from PIL import Image
@@ -8,8 +7,8 @@ from data_loader import Dataloader
 import simplejson as json
 
 if len(sys.argv) != 4:
-  print(f"Usage {sys.argv[0]} <model> <labels-file> <img-file>")
-  exit()
+    print(f"Usage {sys.argv[0]} <model> <labels-file> <img-file>")
+    exit()
 
 model_dir = sys.argv[1]
 labels_file = sys.argv[2]
@@ -20,10 +19,10 @@ model = keras.models.load_model(model_dir)
 
 hyper_param_file = os.path.join(model_dir, "params.json")
 params = {}
-with open(hyper_param_file, 'r') as f:
-  params = json.load(f)
+with open(hyper_param_file, "r") as f:
+    params = json.load(f)
 
-img_size = params['image_size']
+img_size = params["image_size"]
 dataloader = Dataloader(image_size=(img_size, img_size))
 dataloader.load_labels(labels_file)
 

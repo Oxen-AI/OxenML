@@ -4,6 +4,7 @@ import os
 from . import Annotation
 from . import FileFormat
 
+
 class AnnotationsDataset:
     def __init__(self):
         self.annotations: dict[str, list[Annotation]] = {}
@@ -37,10 +38,10 @@ class AnnotationsDataset:
 
     def write_output(
         self,
-        base_img_dir:str,
-        outfile:str,
-        one_example_per_file:bool=False,
-        output_type:FileFormat=FileFormat.CSV
+        base_img_dir: str,
+        outfile: str,
+        one_example_per_file: bool = False,
+        output_type: FileFormat = FileFormat.CSV,
     ):
         print(f"Writing annotations to {outfile}")
         num_outputted = 0

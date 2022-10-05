@@ -1,4 +1,3 @@
-
 from matplotlib import pyplot as plt
 from typing import Optional
 import numpy as np
@@ -6,6 +5,7 @@ import numpy as np
 from oxen.image.bounding_box.annotations import OxenBoundingBox
 from oxen.image.keypoints.image_keypoint import ImageKeypoint
 from oxen.metrics.outcome import PredictionOutcome
+
 
 class HumanPoseKeypointAnnotation:
     def __init__(self, joints):
@@ -24,7 +24,7 @@ class HumanPoseKeypointAnnotation:
     def compute_outcomes(self, prediction, confidence_thresh=0.5, fract_torso=0.2):
         outcomes = []
 
-        bounding_box = BoundingBox.from_human_kp(self)
+        bounding_box = OxenBoundingBox.from_human_kp(self)
         # print(f"Got BB {bounding_box}")
         diag = bounding_box.diagonal()
         # print(f"Got diag {diag}")
@@ -98,9 +98,7 @@ class HumanPoseKeypointAnnotation:
     def parse_keypoints(self, kps, confidence=1.0):
         self.keypoints = []  # clear / initialize keypoints
         for kp in kps:
-            self.keypoints.append(
-                ImageKeypoint(x=kp.x, y=kp.y, confidence=confidence)
-            )
+            self.keypoints.append(ImageKeypoint(x=kp.x, y=kp.y, confidence=confidence))
 
     def parse_array(self, data):
         step = 3

@@ -6,10 +6,17 @@ from tensorflow import keras
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 
-from oxen.image.keypoints.human_pose.coco_dataset import TSVKeypointsDataset, OxenHumanKeypointsAnnotation, FileAnnotations
+from oxen.image.keypoints.human_pose.coco_dataset import (
+    TSVKeypointsDataset,
+    OxenHumanKeypointsAnnotation,
+    FileAnnotations,
+)
+
 
 def annotate(raw_args):
-    parser = argparse.ArgumentParser(description='Detect keypoints on the command line.')
+    parser = argparse.ArgumentParser(
+        description="Detect keypoints on the command line."
+    )
     parser.add_argument(
         "-m",
         dest="model_dir",
@@ -46,7 +53,7 @@ def annotate(raw_args):
         help="Where to store the output annotations",
     )
     args = parser.parse_args(raw_args)
-    
+
     model_dir = args.model_dir
     annotations_file = args.annotations_file
 
@@ -77,7 +84,7 @@ def annotate(raw_args):
     for i in tqdm(range(n)):
         annotation = dataset.annotations[keys[i]]
         fullpath = os.path.join(args.data_dir, annotation.file)
-        
+
         try:
             frame = plt.imread(fullpath)
             frame = frame.reshape(1, img_size, img_size, 3)

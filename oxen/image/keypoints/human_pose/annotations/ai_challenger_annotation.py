@@ -1,7 +1,6 @@
-
-
 from oxen.image.keypoints.human_pose import HumanPoseKeypointAnnotation
 from .. import Joint
+
 
 class AIChallengerHumanKeypointsAnnotation(HumanPoseKeypointAnnotation):
     """
@@ -22,7 +21,7 @@ class AIChallengerHumanKeypointsAnnotation(HumanPoseKeypointAnnotation):
         Joint.LEFT_KNEE,
         Joint.RIGHT_KNEE,
         Joint.LEFT_ANKLE,
-        Joint.RIGHT_ANKLE
+        Joint.RIGHT_ANKLE,
     ]
 
     def __init__(self):

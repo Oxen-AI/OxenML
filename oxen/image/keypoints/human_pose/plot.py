@@ -54,4 +54,3 @@ def plot(raw_args):
     annotation = dataset.get_annotations(filename).annotations[0]
     fullpath = os.path.join(base_dir, filename)
     annotation.plot_image_file(fullpath)
-

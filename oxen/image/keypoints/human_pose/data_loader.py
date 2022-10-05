@@ -11,6 +11,7 @@ import math
 
 from oxen.image.keypoints.human_pose.coco_dataset import TSVKeypointsDataset
 
+
 class Dataloader:
     def __init__(
         self, image_dir, aug, image_size, num_keypoints, should_load_into_memory=False
@@ -60,7 +61,7 @@ class Dataloader:
             path = os.path.join(self.image_dir, filename)
             if not os.path.exists():
                 raise Exception(f"Training image not found: {path}")
-            
+
             for annotation in dataset.get_annotations(filename):
                 paths.append(path)
                 keypoints.append(annotation.keypoints)
@@ -149,12 +150,8 @@ class Dataloader:
             self._example_idx += 1
 
         return (input_batch, output_batch)
-    
-    def _generate_output_heatmap(
-        self,
-        kps_obj,
-        visible: list[bool]
-    ):
+
+    def _generate_output_heatmap(self, kps_obj, visible: list[bool]):
         width = self.image_shape[0]
         height = self.image_shape[1]
         sigma = 6.0

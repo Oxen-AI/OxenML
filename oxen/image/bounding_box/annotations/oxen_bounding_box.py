@@ -1,8 +1,8 @@
-
 import sys
 import math
 
 from oxen.annotations import Annotation
+
 
 class OxenBoundingBox(Annotation):
     def __init__(self, min_x, min_y, width, height, label="Unknown"):
@@ -23,7 +23,7 @@ class OxenBoundingBox(Annotation):
 
     def to_tsv(self):
         return f"{self.min_x}\t{self.min_y}\t{self.width}\t{self.height}"
-    
+
     def to_csv(self):
         return f"{self.min_x},{self.min_y},{self.width},{self.height}"
 

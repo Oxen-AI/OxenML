@@ -1,10 +1,10 @@
-
 from oxen.annotations.annotation import Annotation
 from oxen.image.keypoints.human_pose import CocoHumanKeypointsAnnotation
 from oxen.image.keypoints.human_pose import AIChallengerHumanKeypointsAnnotation
 from .. import HumanPoseKeypointAnnotation
 from .. import Joint
 from oxen.image.keypoints.image_keypoint import ImageKeypoint
+
 
 class OxenHumanKeypointsAnnotation(HumanPoseKeypointAnnotation):
     """
@@ -24,7 +24,7 @@ class OxenHumanKeypointsAnnotation(HumanPoseKeypointAnnotation):
         Joint.LEFT_KNEE,
         Joint.RIGHT_KNEE,
         Joint.LEFT_ANKLE,
-        Joint.RIGHT_ANKLE
+        Joint.RIGHT_ANKLE,
     ]
 
     def __init__(self):
@@ -86,4 +86,3 @@ class OxenHumanKeypointsAnnotation(HumanPoseKeypointAnnotation):
         assert len(oxen_kps.keypoints) == len(OxenHumanKeypointsAnnotation.joints)
 
         return oxen_kps
-

@@ -20,6 +20,7 @@ class OxenBoundingBoxDataset(AnnotationsDataset):
         print(f"TODO: implement...")
         return annotations
 
-    def convert_dataset_annotations(dataset: AnnotationsDataset) -> dict[str, FileAnnotations]:
+    def convert_dataset_annotations(
+        dataset: AnnotationsDataset,
+    ) -> dict[str, FileAnnotations]:
         print(dataset.annotations)
-        

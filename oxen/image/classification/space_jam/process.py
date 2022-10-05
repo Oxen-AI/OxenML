@@ -1,12 +1,11 @@
-
 import sys, os
 import cv2
 import json
 from alive_progress import alive_bar
 
 if len(sys.argv) != 3:
-  print(f"Usage: {sys.argv[0]} <data-dir> <output-dir>")
-  exit()
+    print(f"Usage: {sys.argv[0]} <data-dir> <output-dir>")
+    exit()
 
 data_dir = sys.argv[1]
 output_dir = sys.argv[2]
@@ -15,7 +14,7 @@ test_dir = os.path.join(output_dir, "test")
 
 if not os.path.exists(output_dir):
     os.mkdir(output_dir)
-  
+
 if not os.path.exists(train_dir):
     os.mkdir(train_dir)
 
@@ -46,7 +45,7 @@ video_files = []
 num_videos = len(annotations)
 filenames = []
 key_counts = {}
-with alive_bar(num_videos, title=f'Processing videos') as bar:
+with alive_bar(num_videos, title=f"Processing videos") as bar:
     for key in annotations.keys():
         value = f"{annotations[key]}"
         filename = f"examples/{key}.mp4"
@@ -67,7 +66,7 @@ with alive_bar(num_videos, title=f'Processing videos') as bar:
 
         while success:
             success, image = video.read()
-            
+
             if success:
                 if not classification in key_counts:
                     key_counts[classification] = 0
@@ -75,7 +74,7 @@ with alive_bar(num_videos, title=f'Processing videos') as bar:
 
                 output_name = f"{classification}_{key}_{frame}.jpg"
                 output_file = os.path.join(train_dir, output_name)
-                
+
                 # print(f"Saving image: {output_file}")
 
                 # Saves the frames with frame-count
@@ -89,7 +88,7 @@ print(f"Saving annotations")
 
 train_annotations = []
 
-with open(output_annotations_file, 'w') as f:
+with open(output_annotations_file, "w") as f:
     for filename in filenames:
         filename = os.path.basename(filename)
         key = filename.split("_")[0]
@@ -99,7 +98,7 @@ with open(output_annotations_file, 'w') as f:
         f.write("\n")
 
 
-with open(output_labels_file, 'w') as f:
+with open(output_labels_file, "w") as f:
     for key in reverse_labels.keys():
         f.write(key)
         f.write("\n")

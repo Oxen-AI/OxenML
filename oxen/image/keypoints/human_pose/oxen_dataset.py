@@ -20,7 +20,9 @@ class OxenHumanKeypointsDataset(AnnotationsDataset):
         for (id, file_ann) in dataset.annotations.items():
             converted_ann = FileAnnotations(file_ann.file)
             for ann in file_ann.annotations:
-                converted_ann.add_annotation(OxenHumanKeypointsAnnotation.from_annotation(ann))
+                converted_ann.add_annotation(
+                    OxenHumanKeypointsAnnotation.from_annotation(ann)
+                )
             annotations[id] = converted_ann
         dataset = OxenHumanKeypointsDataset()
         dataset.annotations = annotations
@@ -31,6 +33,7 @@ class OxenHumanKeypointsDataset(AnnotationsDataset):
         print(f"TODO: implement...")
         return annotations
 
-    def convert_dataset_annotations(dataset: AnnotationsDataset) -> dict[str, FileAnnotations]:
+    def convert_dataset_annotations(
+        dataset: AnnotationsDataset,
+    ) -> dict[str, FileAnnotations]:
         print(dataset.annotations)
-        

@@ -1,5 +1,5 @@
-
 from oxen.metrics.outcome import PredictionOutcome
+
 
 class Metrics:
     def precision(outcomes):

@@ -1,5 +1,5 @@
-
 from enum import Enum
+
 
 class PredictionOutcome(Enum):
     TRUE_POSITIVE = 1
