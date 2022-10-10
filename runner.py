@@ -2,9 +2,11 @@ import argparse
 
 # from tools.keypoints import annotate as keypoints_annotate
 # from tools.keypoints import plot as keypoints_plot
-# from tools.keypoints import resize as keypoints_resize
+# from tools.keypoints import resize as kp_resize
 from tools.keypoints import convert as kp_convert
 from tools.bounding_box import convert as bb_convert
+from tools.bounding_box import resize as bb_resize
+from tools.bounding_box import plot as bb_plot
 from typing import Callable, List
 import sys
 
@@ -21,11 +23,13 @@ def print_help(tools: dict[str, Callable]):
 def main():
     # Mapping of tool names to functions they will call
     tools = {
-        # "keypoints_resize": keypoints_resize,
+        # "kp_resize": kp_resize,
         # "keypoints_annotate": keypoints_annotate,
         # "keypoints_plot": keypoints_plot,
         "kp_convert": kp_convert,
         "bbox_convert": bb_convert,
+        "bbox_resize": bb_resize,
+        "bbox_plot": bb_plot,
     }
 
     if len(sys.argv) < 2:

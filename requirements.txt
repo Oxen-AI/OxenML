@@ -1,2 +1,4 @@
 jsonpickle
 pytest
+imgaug
+joblib

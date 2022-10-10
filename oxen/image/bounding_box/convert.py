@@ -35,12 +35,21 @@ def convert(raw_args):
         required=True,
         help="The output file of annotations",
     )
+    parser.add_argument(
+        "-c",
+        "--category_filter",
+        type=int,
+        default=1,
+        help="Type of bounding box to filter down to",
+    )
     args = parser.parse_args(raw_args)
 
     if not os.path.exists(args.input_file):
         raise Exception(f"File does not exist: {args.input_file}")
 
-    dataset = CocoBoundingBoxDataset(annotation_file=args.input_file)
+    dataset = CocoBoundingBoxDataset(
+        annotation_file=args.input_file, category_filter=args.category_filter
+    )
 
     ext = pathlib.Path(args.output_file).suffix
     if ext_equals(ext, FileFormat.ND_JSON):
