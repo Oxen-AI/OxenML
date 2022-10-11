@@ -14,7 +14,6 @@ from oxen.image.bounding_box import OxenBoundingBox, CSVBoundingBoxDataset
 
 from oxen.annotations import FileAnnotations
 
-
 def resize_annotation(outdir, file_type, aug, dataset, filenames, fullpaths, i):
     filename = filenames[i]
     fullpath = fullpaths[i]
@@ -128,7 +127,7 @@ def resize(raw_args):
     print(f"Resizing {len(filenames)} images to {args.width}x{args.height}")
 
     n_jobs = multiprocessing.cpu_count()
-    results = Parallel(n_jobs=n_jobs)(
+    results = Parallel(n_jobs=n_jobs, prefer="threads")(
         delayed(resize_annotation)(
             outdir, args.output_type, aug, dataset, filenames, fullpaths, i
         )
