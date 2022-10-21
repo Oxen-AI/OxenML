@@ -7,6 +7,7 @@ from tools.keypoints import convert as kp_convert
 from tools.bounding_box import convert as bb_convert
 from tools.bounding_box import resize as bb_resize
 from tools.bounding_box import plot as bb_plot
+from tools.bounding_box import predict as bb_predict
 from typing import Callable, List
 import sys
 
@@ -30,6 +31,7 @@ def main():
         "bbox_convert": bb_convert,
         "bbox_resize": bb_resize,
         "bbox_plot": bb_plot,
+        "bbox_predict": bb_predict,
     }
 
     if len(sys.argv) < 2:

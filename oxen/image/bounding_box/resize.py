@@ -14,6 +14,7 @@ from oxen.image.bounding_box import OxenBoundingBox, CSVBoundingBoxDataset
 
 from oxen.annotations import FileAnnotations
 
+
 def resize_annotation(outdir, file_type, aug, dataset, filenames, fullpaths, i):
     filename = filenames[i]
     fullpath = fullpaths[i]
@@ -36,7 +37,11 @@ def resize_annotation(outdir, file_type, aug, dataset, filenames, fullpaths, i):
         origin = new_kps_obj[0]
         size = new_kps_obj[1]
         new_ann = OxenBoundingBox(
-            min_x=origin.x, min_y=origin.y, width=size.x, height=size.y
+            min_x=origin.x,
+            min_y=origin.y,
+            width=size.x,
+            height=size.y,
+            label=annotation.label,
         )
 
         try:
@@ -134,11 +139,17 @@ def resize(raw_args):
         for i in tqdm(range(len(filenames)))
     )
 
-    print(f"Writing {len(results)} to output {args.output_annotations}")
-    with open(args.output_annotations, "w") as outfile:
-        if args.with_header:
-            outfile.write("file,min_x,min_y,width,height\n")
-        for result in results:
+    out_filename = args.output_annotations
+    parent = os.path.dirname(out_filename)
+    if not os.path.exists(parent):
+        os.makedirs(parent)
+
+    print(f"Writing {len(results)} to output {out_filename}")
+    with open(out_filename, "w") as outfile:
+        for (i, result) in enumerate(results):
+            if args.with_header and i == 0:
+                print(result)
+                outfile.write(f"{result.csv_header()}\n")
             basename = os.path.basename(result.file)
             result_file = os.path.join(args.output_prefix, basename)
             result.file = result_file

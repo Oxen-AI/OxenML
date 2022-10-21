@@ -9,13 +9,13 @@ from oxen.image.bounding_box.annotations.oxen_bounding_box import OxenBoundingBo
 
 
 class CSVBoundingBoxDataset(AnnotationsDataset):
-    def __init__(self, delimiter=",", has_header: bool = False):
+    def __init__(self, delimiter=",", has_header: bool = True):
         super().__init__()
         self.delimiter = delimiter
         self.has_header = has_header
 
     def from_file(
-        path: str, delimiter=",", has_header: bool = False
+        path: str, delimiter=",", has_header: bool = True
     ) -> CSVBoundingBoxDataset:
         dataset = CSVBoundingBoxDataset(delimiter=delimiter, has_header=has_header)
         dataset._load_annotations_from_file(path)
@@ -31,8 +31,9 @@ class CSVBoundingBoxDataset(AnnotationsDataset):
                     continue
 
                 filename = row[0]
+                label = row[1]
                 bounding_box = OxenBoundingBox.from_arr(
-                    [float(item) for item in row[1:]]
+                    label, [float(item) for item in row[2:]]
                 )
 
                 if not filename in annotations:

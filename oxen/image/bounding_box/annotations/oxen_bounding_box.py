@@ -16,27 +16,25 @@ class OxenBoundingBox(Annotation):
         self.label = label
 
     def __repr__(self):
-        return f"<BoundingBox x: {self.min_x}, y: {self.min_y} w: {self.width} h: {self.height}>"
+        return f"<BoundingBox x: {self.min_x}, y: {self.min_y} w: {self.width} h: {self.height} label: {self.label}>"
 
     def tsv_header(self) -> str:
-        return "file\tmin_x\tmin_y\twidth\theight"
+        return "file\tlabel\tmin_x\tmin_y\twidth\theight"
 
     def csv_header(self) -> str:
-        return "file,min_x,min_y,width,height"
+        return "file,label,min_x,min_y,width,height"
 
     def to_tsv(self) -> str:
-        return (
-            f"{self.min_x:.2f}\t{self.min_y:.2f}\t{self.width:.2f}\t{self.height:.2f}"
-        )
+        return f"{self.label}\t{self.min_x:.2f}\t{self.min_y:.2f}\t{self.width:.2f}\t{self.height:.2f}"
 
     def to_csv(self) -> str:
-        return f"{self.min_x:.2f},{self.min_y:.2f},{self.width:.2f},{self.height:.2f}"
+        return f"{self.label},{self.min_x:.2f},{self.min_y:.2f},{self.width:.2f},{self.height:.2f}"
 
     def from_csv(self, line: str) -> OxenBoundingBox:
         return [float(item.strip()) for item in line.split(",")]
 
-    def from_arr(arr: list[float]) -> OxenBoundingBox:
-        return OxenBoundingBox(arr[0], arr[1], arr[2], arr[3])
+    def from_arr(label: str, arr: list[float]) -> OxenBoundingBox:
+        return OxenBoundingBox(arr[0], arr[1], arr[2], arr[3], label)
 
     def diagonal(self) -> float:
         return math.sqrt((self.width * self.width) + (self.height * self.height))

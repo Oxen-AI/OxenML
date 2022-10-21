@@ -29,6 +29,12 @@ class FileAnnotations:
     def to_csv(self):
         return "\n".join([f"{self.file},{a.to_csv()}" for a in self.annotations])
 
+    def csv_header(self):
+        return self.annotations[0].csv_header()
+
+    def tsv_header(self):
+        return self.annotations[0].tsv_header()
+
     def to_json(self):
         return jsonpickle.encode(
             {"input": self.file, "outputs": self.annotations},

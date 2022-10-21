@@ -39,7 +39,7 @@ def convert(raw_args):
         "-c",
         "--category_filter",
         type=int,
-        default=1,
+        default=None,
         help="Type of bounding box to filter down to",
     )
     args = parser.parse_args(raw_args)
