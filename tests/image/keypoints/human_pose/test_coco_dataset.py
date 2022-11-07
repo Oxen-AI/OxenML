@@ -6,7 +6,7 @@ oxen_dir = pathlib.Path(__file__).parent.parent.parent.parent.parent.resolve()
 sys.path.append(str(oxen_dir))
 
 from oxen.image.keypoints.human_pose import CocoHumanKeypointsDataset, Joint
-from oxen.image.bounding_box import CocoBoundingBoxDataset
+from oxen.image.bounding_box.datasets import CocoBoundingBoxDataset
 
 
 def test_load_coco_person_keypoints():

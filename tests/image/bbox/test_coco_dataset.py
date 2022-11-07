@@ -6,7 +6,7 @@ oxen_dir = pathlib.Path(__file__).parent.parent.parent.parent.resolve()
 sys.path.append(str(oxen_dir))
 
 from oxen.image.bounding_box.annotations.oxen_bounding_box import OxenBoundingBox
-from oxen.image.bounding_box import CocoBoundingBoxDataset
+from oxen.image.bounding_box.datasets import CocoBoundingBoxDataset
 
 
 def test_load_coco_instances():
@@ -37,8 +37,8 @@ def test_convert_coco_to_tsv():
 
     with open(outfile) as f:
         lines = f.readlines()
-        assert lines[0] == "file\tmin_x\tmin_y\twidth\theight\n"
-        assert lines[1] == "test/000000397133.jpg\t217.62\t240.54\t38.99\t57.75\n"
+        assert lines[0] == "file\tlabel\tmin_x\tmin_y\twidth\theight\n"
+        assert lines[1] == "test/000000397133.jpg\tbottle\t217.62\t240.54\t38.99\t57.75\n"
 
     os.remove(outfile)
 
@@ -54,7 +54,7 @@ def test_convert_coco_to_csv():
 
     with open(outfile) as f:
         lines = f.readlines()
-        assert lines[0] == "file,min_x,min_y,width,height\n"
-        assert lines[1] == "test/000000397133.jpg,217.62,240.54,38.99,57.75\n"
+        assert lines[0] == "file,label,min_x,min_y,width,height\n"
+        assert lines[1] == "test/000000397133.jpg,bottle,217.62,240.54,38.99,57.75\n"
 
     os.remove(outfile)

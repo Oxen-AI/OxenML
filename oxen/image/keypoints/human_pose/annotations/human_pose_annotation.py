@@ -134,6 +134,16 @@ class HumanPoseKeypointAnnotation:
     def parse_json(self, data):
         raise NotImplementedError()
 
+    def csv_header(self):
+        return "\t".join(
+            [f"{j}_x,{j}_y,{j}_is_visible" for j in self.joints]
+        )
+
+    def to_csv(self): 
+        return ",".join(
+            [f"{k.x},{k.y},{'{:.2f}'.format(k.confidence)}" for k in self.keypoints]
+        )
+
     def to_tsv(self):
         return "\t".join(
             [f"{k.x}\t{k.y}\t{'{:.2f}'.format(k.confidence)}" for k in self.keypoints]
