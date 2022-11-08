@@ -5,7 +5,7 @@ import pathlib
 from oxen.annotations.file_format import FileFormat
 from oxen.annotations.file_format import ext_equals
 
-from . import CocoBoundingBoxDataset
+from oxen.image.bounding_box.datasets import create_dataset
 
 
 def convert(raw_args):
@@ -36,20 +36,17 @@ def convert(raw_args):
         help="The output file of annotations",
     )
     parser.add_argument(
-        "-c",
-        "--category_filter",
-        type=int,
-        default=None,
-        help="Type of bounding box to filter down to",
+        "--input_format",
+        type=str,
+        required=True,
+        help="Format of the input data",
     )
     args = parser.parse_args(raw_args)
 
     if not os.path.exists(args.input_file):
         raise Exception(f"File does not exist: {args.input_file}")
 
-    dataset = CocoBoundingBoxDataset(
-        annotation_file=args.input_file, category_filter=args.category_filter
-    )
+    dataset = create_dataset(file=args.input_file, format=args.input_format)
 
     ext = pathlib.Path(args.output_file).suffix
     if ext_equals(ext, FileFormat.ND_JSON):

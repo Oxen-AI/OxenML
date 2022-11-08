@@ -10,7 +10,8 @@ from matplotlib import pyplot as plt
 from joblib import Parallel, delayed
 import multiprocessing
 
-from oxen.image.bounding_box import OxenBoundingBox, CSVBoundingBoxDataset
+from oxen.image.bounding_box import OxenBoundingBox
+from oxen.image.bounding_box.datasets import OxenCSVBoundingBoxDataset
 
 from oxen.annotations import FileAnnotations
 
@@ -115,7 +116,7 @@ def resize(raw_args):
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-    dataset = CSVBoundingBoxDataset.from_file(
+    dataset = OxenCSVBoundingBoxDataset.from_file(
         annotations_file, has_header=args.with_header
     )
     aug = iaa.Sequential([iaa.Resize({"height": args.height, "width": args.width})])

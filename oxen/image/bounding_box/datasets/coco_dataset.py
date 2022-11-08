@@ -7,10 +7,9 @@ from oxen.annotations.file_annotations import FileAnnotations
 
 
 class CocoBoundingBoxDataset(AnnotationsDataset):
-    def __init__(self, annotation_file: str, category_filter=None):
+    def __init__(self, path: str):
         super().__init__()
-        self.category_filter = category_filter
-        self.annotations = self._load_dataset(annotation_file)
+        self.annotations = self._load_dataset(path)
 
     def _load_dataset(self, annotation_file):
         if not os.path.exists(annotation_file):
@@ -38,9 +37,6 @@ class CocoBoundingBoxDataset(AnnotationsDataset):
             category_num = int(item["category_id"])
             if not category_num in categories:
                 raise Exception(f"Unknown category id {category_num}")
-
-            if self.category_filter != None and self.category_filter != category_num:
-                continue
 
             label_name = categories[category_num]
             image_id = str(item["image_id"])

@@ -11,7 +11,7 @@ from oxen.image.bounding_box.datasets import CocoBoundingBoxDataset
 
 def test_load_coco_instances():
     dataset = CocoBoundingBoxDataset(
-        annotation_file="tests/data/coco_bbox_categories_small.json"
+        path="tests/data/coco_bbox_categories_small.json"
     )
     assert dataset.num_inputs() == 4
 
@@ -28,7 +28,7 @@ def test_load_coco_instances():
 
 def test_convert_coco_to_tsv():
     dataset = CocoBoundingBoxDataset(
-        annotation_file="tests/data/coco_bbox_categories_small.json"
+        path="tests/data/coco_bbox_categories_small.json"
     )
 
     base_dir = "test"
@@ -45,7 +45,7 @@ def test_convert_coco_to_tsv():
 
 def test_convert_coco_to_csv():
     dataset = CocoBoundingBoxDataset(
-        annotation_file="tests/data/coco_bbox_categories_small.json"
+        path="tests/data/coco_bbox_categories_small.json"
     )
 
     base_dir = "test"

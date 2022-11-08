@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 import csv
 
 from oxen.annotations.annotations_dataset import AnnotationsDataset
@@ -8,7 +7,7 @@ from oxen.annotations.file_annotations import FileAnnotations
 from oxen.image.bounding_box.annotations.oxen_bounding_box import OxenBoundingBox
 
 
-class CSVBoundingBoxDataset(AnnotationsDataset):
+class OxenCSVBoundingBoxDataset(AnnotationsDataset):
     def __init__(self, delimiter=",", has_header: bool = True):
         super().__init__()
         self.delimiter = delimiter
@@ -16,8 +15,8 @@ class CSVBoundingBoxDataset(AnnotationsDataset):
 
     def from_file(
         path: str, delimiter=",", has_header: bool = True
-    ) -> CSVBoundingBoxDataset:
-        dataset = CSVBoundingBoxDataset(delimiter=delimiter, has_header=has_header)
+    ) -> OxenCSVBoundingBoxDataset:
+        dataset = OxenCSVBoundingBoxDataset(delimiter=delimiter, has_header=has_header)
         dataset._load_annotations_from_file(path)
         return dataset
 

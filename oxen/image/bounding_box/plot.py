@@ -3,7 +3,7 @@ import argparse
 import os
 import numpy as np
 
-from oxen.image.bounding_box import CSVBoundingBoxDataset
+from oxen.image.bounding_box.datasets import OxenCSVBoundingBoxDataset
 
 
 def plot(raw_args):
@@ -34,7 +34,7 @@ def plot(raw_args):
     base_dir = args.data
     annotations_file = args.annotations
 
-    dataset = CSVBoundingBoxDataset.from_file(annotations_file, has_header=True)
+    dataset = OxenCSVBoundingBoxDataset.from_file(annotations_file, has_header=True)
 
     fullpaths = []
     filenames = []
