@@ -1,7 +1,7 @@
 import scipy.io
 
 from oxen.annotations.annotations_dataset import AnnotationsDataset
-from oxen.annotations.file_annotations import FileAnnotations
+from oxen.annotations.id_annotations import IDAnnotations
 from oxen.image.keypoints.human_pose import LeedsHumanKeypointsAnnotation
 
 
@@ -45,7 +45,7 @@ class LeedsKeypointsDataset(AnnotationsDataset):
                 kps.append(data[1][j][e])
                 kps.append(1.0 if data[2][j][e] == 0.0 else 0.0)
             filename = f"im{str(e+1).zfill(4)}.jpg"
-            file_annotation = FileAnnotations(file=filename)
+            file_annotation = IDAnnotations(id=filename)
             ann = LeedsHumanKeypointsAnnotation()
             ann.parse_array(kps)
             file_annotation.add_annotation(ann)

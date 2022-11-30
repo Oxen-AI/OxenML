@@ -9,7 +9,7 @@ from imgaug.augmentables.kps import Keypoint
 from matplotlib import pyplot as plt
 
 from oxen.image.keypoints.human_pose import (
-    FileAnnotations,
+    IDAnnotations,
     OxenHumanKeypointsAnnotation,
     TSVKeypointsDataset,
 )
@@ -85,7 +85,7 @@ def resize(raw_args):
             fullpath = fullpaths[i]
 
             annotations = dataset.get_annotations(filename)
-            file_annotation = FileAnnotations(file=filename)
+            file_annotation = IDAnnotations(id=filename)
             for (i, annotation) in enumerate(annotations.annotations):
                 if len(annotation.keypoints) != args.num_keypoints:
                     print(

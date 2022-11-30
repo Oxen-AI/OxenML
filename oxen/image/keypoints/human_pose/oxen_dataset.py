@@ -3,7 +3,7 @@ import json
 
 from oxen.image.keypoints.human_pose import OxenHumanKeypointsAnnotation
 from oxen.annotations.annotations_dataset import AnnotationsDataset
-from oxen.annotations.file_annotations import FileAnnotations
+from oxen.annotations.id_annotations import IDAnnotations
 
 
 class OxenHumanKeypointsDataset(AnnotationsDataset):
@@ -18,7 +18,7 @@ class OxenHumanKeypointsDataset(AnnotationsDataset):
     def from_dataset(dataset: AnnotationsDataset):
         annotations = {}
         for (id, file_ann) in dataset.annotations.items():
-            converted_ann = FileAnnotations(file_ann.file)
+            converted_ann = IDAnnotations(file_ann.file)
             for ann in file_ann.annotations:
                 converted_ann.add_annotation(
                     OxenHumanKeypointsAnnotation.from_annotation(ann)
@@ -28,12 +28,12 @@ class OxenHumanKeypointsDataset(AnnotationsDataset):
         dataset.annotations = annotations
         return dataset
 
-    def load_annotations_from_file(path: str) -> dict[str, FileAnnotations]:
+    def load_annotations_from_file(path: str) -> dict[str, IDAnnotations]:
         annotations = {}
         print(f"TODO: implement...")
         return annotations
 
     def convert_dataset_annotations(
         dataset: AnnotationsDataset,
-    ) -> dict[str, FileAnnotations]:
+    ) -> dict[str, IDAnnotations]:
         print(dataset.annotations)

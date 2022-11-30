@@ -8,6 +8,9 @@ from tools.bounding_box import convert as bb_convert
 from tools.bounding_box import resize as bb_resize
 from tools.bounding_box import plot as bb_plot
 from tools.bounding_box import predict as bb_predict
+from tools.text_classification import convert as tc_convert
+from tools.text_classification import train as tc_train
+from tools.text_classification import predict as tc_predict
 from typing import Callable, List
 import sys
 
@@ -32,6 +35,9 @@ def main():
         "bbox_resize": bb_resize,
         "bbox_plot": bb_plot,
         "bbox_predict": bb_predict,
+        "tc_convert": tc_convert,
+        "tc_train": tc_train,
+        "tc_predict": tc_predict,
     }
 
     if len(sys.argv) < 2:

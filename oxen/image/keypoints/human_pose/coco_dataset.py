@@ -3,7 +3,7 @@ import json
 
 from oxen.image.keypoints.human_pose import CocoHumanKeypointsAnnotation
 from oxen.annotations.annotations_dataset import AnnotationsDataset
-from oxen.annotations.file_annotations import FileAnnotations
+from oxen.annotations.id_annotations import IDAnnotations
 
 
 class CocoHumanKeypointsDataset(AnnotationsDataset):
@@ -23,7 +23,7 @@ class CocoHumanKeypointsDataset(AnnotationsDataset):
         file_annotations = {}
         for item in data["images"]:
             id = str(item["id"])
-            file_annotations[id] = FileAnnotations(file=item["file_name"])
+            file_annotations[id] = IDAnnotations(id=item["file_name"])
 
         print(f"Got {len(file_annotations)} image files")
 

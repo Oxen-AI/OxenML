@@ -9,7 +9,7 @@ from tqdm import tqdm
 from oxen.image.keypoints.human_pose.coco_dataset import (
     TSVKeypointsDataset,
     OxenHumanKeypointsAnnotation,
-    FileAnnotations,
+    IDAnnotations,
 )
 
 
@@ -93,7 +93,7 @@ def annotate(raw_args):
             frame = frame.reshape(img_size, img_size, 3)
             outputs = outputs.reshape((img_size, img_size, params["num_keypoints"]))
 
-            a = FileAnnotations(file=annotation.file)
+            a = IDAnnotations(file=annotation.file)
             a.add_annotation(OxenHumanKeypointsAnnotation.from_nd_array(outputs))
             model_annotations.append(a)
         except Exception as e:

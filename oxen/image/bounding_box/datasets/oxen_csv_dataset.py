@@ -3,7 +3,7 @@ from __future__ import annotations
 import csv
 
 from oxen.annotations.annotations_dataset import AnnotationsDataset
-from oxen.annotations.file_annotations import FileAnnotations
+from oxen.annotations.id_annotations import IDAnnotations
 from oxen.image.bounding_box.annotations.oxen_bounding_box import OxenBoundingBox
 
 
@@ -20,7 +20,7 @@ class OxenCSVBoundingBoxDataset(AnnotationsDataset):
         dataset._load_annotations_from_file(path)
         return dataset
 
-    def _load_annotations_from_file(self, path: str) -> dict[str, FileAnnotations]:
+    def _load_annotations_from_file(self, path: str) -> dict[str, IDAnnotations]:
         print(f"Skip header? {self.has_header}")
         annotations = {}
         with open(path) as csvfile:
@@ -36,7 +36,7 @@ class OxenCSVBoundingBoxDataset(AnnotationsDataset):
                 )
 
                 if not filename in annotations:
-                    annotations[filename] = FileAnnotations(filename)
+                    annotations[filename] = IDAnnotations(filename)
 
                 annotations[filename].add_annotation(bounding_box)
         self.annotations = annotations

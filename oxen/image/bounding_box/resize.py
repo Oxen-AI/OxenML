@@ -13,7 +13,7 @@ import multiprocessing
 from oxen.image.bounding_box import OxenBoundingBox
 from oxen.image.bounding_box.datasets import OxenCSVBoundingBoxDataset
 
-from oxen.annotations import FileAnnotations
+from oxen.annotations import IDAnnotations
 
 
 def resize_annotation(outdir, file_type, aug, dataset, filenames, fullpaths, i):
@@ -21,7 +21,7 @@ def resize_annotation(outdir, file_type, aug, dataset, filenames, fullpaths, i):
     fullpath = fullpaths[i]
 
     annotations = dataset.get_annotations(filename)
-    file_annotation = FileAnnotations(file=filename)
+    file_annotation = IDAnnotations(id=filename)
     for (i, annotation) in enumerate(annotations.annotations):
         # Need to convert to imgaug Keypoint objects
         img_aug_kps = [
